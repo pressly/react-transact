@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "es6-promise": "registry:npm/es6-promise#3.0.0+20160211003958",
+    "react-redux": "registry:npm/react-redux#4.4.0+20160207114942",
+    "redux": "registry:npm/redux#3.0.6+20160214194820"
+  },
+  "ambientDependencies": {
+    "react": "registry:dt/react#0.14.0+20160319053454",
+    "react-addons-test-utils": "registry:dt/react-addons-test-utils#0.14.0+20160427035638",
+    "react-dom": "registry:dt/react-dom#0.14.0+20160316155526",
+    "react-router": "registry:dt/react-router#2.0.0+20160423062133",
+    "react-router/history": "registry:dt/react-router/history#2.0.0+20160316155526"
+  }
+}
