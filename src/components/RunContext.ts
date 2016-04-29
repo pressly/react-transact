@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { IMapTasks, IStore } from './../interfaces'
+import { IMapTasks, IStore, IResolveOptions } from './../interfaces'
 import TaskQueue from './../TaskQueue'
 
 type IProps = {
@@ -7,6 +7,10 @@ type IProps = {
   store: IStore
   location: any
   params: any
+}
+
+const defaultResolveOpts = {
+  immediate: false
 }
 
 export default class RunContext extends React.Component<IProps,void> {
@@ -34,13 +38,17 @@ export default class RunContext extends React.Component<IProps,void> {
 
   getChildContext() {
     return {
-      resolve: (mapTaskRuns: IMapTasks): void => {
+      resolve: (mapTaskRuns: IMapTasks, opts: IResolveOptions = defaultResolveOpts): void => {
         this.queue.push(mapTaskRuns)
+        if (opts.immediate) {
+          // Push to next tick to avoid state updates before mounting
+          setTimeout(() => this.runTasks(this.props), 0)
+        }
       }
     }
   }
 
-  runTasks(props) {
+  runTasks(props): void {
     this.queue.run(
       this.store.dispatch,
       this.store.getState(),
@@ -55,7 +63,10 @@ export default class RunContext extends React.Component<IProps,void> {
   }
 
   componentWillReceiveProps(nextProps) {
-    setTimeout(() => this.runTasks(nextProps), 0)
+    // Only call run if there are tasks to run, otherwise `onResolve` will trigger unnecessarily.
+    if (this.queue.size > 0) {
+      setTimeout(() => this.runTasks(nextProps), 0)
+    }
   }
 
   render() {

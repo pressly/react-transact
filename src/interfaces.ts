@@ -30,3 +30,11 @@ export interface IStore {
   subscribe: (f: Function) => () => void
   getState: ()=> any
 }
+
+export type IResolveOptions = {
+  immediate: boolean
+}
+
+export type IDecoratorOptions = {
+  onMount: boolean
+}

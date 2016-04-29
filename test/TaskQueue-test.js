@@ -39,7 +39,7 @@ test('TaskQueue', (t) => {
 })
 
 test('TaskQueue#run (completion)', (t) => {
-  t.plan(4)
+  t.plan(7)
 
   const dispatch = sinon.spy()
   const queue = new TaskQueue()
@@ -55,11 +55,27 @@ test('TaskQueue#run (completion)', (t) => {
   p.then(() => {
     t.ok(true, 'resolves promise on computation completion')
     t.equal(queue.size, 0, 'removes successfully completed tasks')
-
-    const p2 = queue.run(dispatch, null, null)
-
-    p2.then(() => {
-      t.ok(true, 'resolves promise when no computations are queued')
+    t.deepEqual(dispatch.firstCall.args[0], {
+      type: 'GOOD', payload: 'Alice says "Hello!"'
     })
+  })
+
+  queue.push((state, props) => [
+    Task.resolve({ type: 'GOOD', payload: `${state.name} says "${props.type}!"` })
+  ])
+
+  const p2 = queue.run(dispatch, { name: 'Bob' }, { type: 'Bye' })
+
+  p2.then(() => {
+    t.ok(true, 'maintains total ordering (first run completes before second)')
+    t.deepEqual(dispatch.secondCall.args[0], {
+      type: 'GOOD', payload: 'Bob says "Bye!"'
+    })
+  })
+
+  const p3 = queue.run(dispatch, null, null)
+
+  p3.then(() => {
+    t.equal(dispatch.callCount, 2, 'resolves promise when no computations are queued')
   })
 })

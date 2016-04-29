@@ -2,9 +2,11 @@ import { IAction, IActionThunk, ITask, IMapTasks } from './interfaces'
 
 class TaskQueue {
   private queue: Array<IMapTasks>
+  private pending: Promise<ITask<any,any>[]>
 
   constructor() {
     this.queue = []
+    this.pending = Promise.resolve()
   }
 
   get size() {
@@ -16,15 +18,21 @@ class TaskQueue {
   }
 
   run(dispatch: IActionThunk<any>, state: any, props: any): Promise<ITask<any,any>[]> {
+    // WARNING: Mutation will occur.
+    let newPending
+
     if (this.size === 0) {
-      return Promise.resolve([])
+      newPending = Promise.resolve([])
     } else {
-      return new Promise<any>((res) => {
-        // WATCH OUT! THIS WILL MUTATE
+      // WARNING: Mutating the queue so the next run call won't run through same queued tasks.
+      const currentQueue = this.queue
+      this.queue = []
+      newPending = new Promise<any>((res) => {
+        // WARNING: Watch out! These will mutate!
         let count = 0
         let failedTasks = []
 
-        this.queue.forEach((f: IMapTasks) => {
+        currentQueue.forEach((f: IMapTasks) => {
           f(state, props).forEach((task: ITask<any,any>) => {
             count = count + 1
             // Bump to next tick so we give all tasks a chance to increment
@@ -53,10 +61,12 @@ class TaskQueue {
           })
         })
       }).then((failedTasks: ITask<any,any>[]) => {
-        this.queue = []
         return failedTasks
       })
     }
+    // Chaining the previous pending tasks so they will resolve in order.
+    this.pending = this.pending.then(() => newPending)
+    return this.pending
   }
 }
 

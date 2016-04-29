@@ -11,9 +11,11 @@ const transact = require('../index').transact
 const Task = require('../index').Task
 const taskCreator = require('../index').taskCreator
 
+const h = React.createElement
+
 test('transact decorator (empty)', (t) => {
   const resolve = () => {}
-  const factory = transact((state, props) => [])
+  const factory = transact()((state, props) => [])
 
   t.ok(typeof factory === 'function', 'returns a higher-order component')
 
@@ -22,7 +24,7 @@ test('transact decorator (empty)', (t) => {
   t.ok(typeof Wrapped.displayName === 'string', 'returns a React component')
 
   const result = mount(
-    React.createElement(Wrapped, {
+    h(Wrapped, {
       resolve,
       name: 'Alice'
     })
@@ -36,17 +38,17 @@ test('transact decorator (empty)', (t) => {
 
 test('transact decorator (with tasks)', (t) => {
   const resolve = sinon.spy()
-  const Empty = () => React.createElement('p')
+  const Empty = () => h('p')
   const mapTasks = (state, props) => [
     Task.resolve({ type: 'GOOD', payload: 42 })
   ]
 
-  const Wrapped = transact(mapTasks)(Empty)
+  const Wrapped = transact()(mapTasks)(Empty)
 
   mount(
-    React.createElement('div', {}, [
-      React.createElement(Wrapped, { resolve }),
-      React.createElement(Wrapped, { resolve })
+    h('div', {}, [
+      h(Wrapped, { resolve }),
+      h(Wrapped, { resolve })
     ])
   )
 
@@ -57,12 +59,33 @@ test('transact decorator (with tasks)', (t) => {
   t.end()
 })
 
+test('transact decorator (run on mount)', (t) => {
+  const resolve = sinon.spy()
+  const Empty = () => h('p')
+  const mapTasks = (state, props) => [
+    Task.resolve({ type: 'GOOD', payload: 42 })
+  ]
+
+  const Wrapped = transact({ onMount: true })(mapTasks)(Empty)
+
+  mount(
+    h('div', {}, [
+      h(Wrapped, { resolve })
+    ])
+  )
+
+  t.equal(resolve.firstCall.args[0], mapTasks, 'calls resolve with task run mapper')
+  t.deepEqual(resolve.firstCall.args[1], { immediate: true }, 'enables immediate flag')
+
+  t.end()
+})
+
 test('RunContext with transact decorator (integration)', (t) => {
   const store = makeStore({
     message: ''
   })
   const dispatchSpy = sinon.spy(store, 'dispatch')
-  const Message = ({ message }) => React.createElement('p', {}, [ message ])
+  const Message = ({ message }) => h('p', {}, [ message ])
   const mapTasks = (state, props) => [
     Task.resolve({ type: MESSAGE, payload: 'Hello Alice!' }),
     taskCreator(ERROR, MESSAGE, () => new Promise((res, rej) => {
@@ -72,44 +95,82 @@ test('RunContext with transact decorator (integration)', (t) => {
     }))()
   ]
 
-  const Wrapped = transact(mapTasks)(
+  const Wrapped = transact()(mapTasks)(
     connect((state) => ({ message: state.message }))(
       Message
     )
   )
 
-  const wrapper = mount(
-    React.createElement(Provider, { store },
-      React.createElement(RunContext, {
-          onResolve: (failedTasks) => {
-            t.equal(failedTasks.length, 1, 'resolves with failed tasks')
-            t.equal(wrapper.text(), 'Hello Error!', 'updates state after task completion')
-
-            t.equal(dispatchSpy.callCount, 2)
-
-            t.deepEqual(dispatchSpy.firstCall.args[0], {
-              type: MESSAGE,
-              payload: 'Hello Alice!'
-            }, 'dispatches first action')
-
-            t.deepEqual(dispatchSpy.secondCall.args[0], {
-              type: ERROR,
-              payload: 'Boo-urns'
-            }, 'dispatches second action')
-
-            t.end()
-          }
-        },
-        React.createElement(Wrapped)
-      )
+  const WrappedRunOnMount = transact({ onMount: true })(() => [
+    Task.resolve({ type: MESSAGE, payload: 'Bye!' })
+  ])(
+    connect((state) => ({ message: state.message }))(
+      Message
     )
   )
+
+  class Root extends React.Component {
+    constructor(props) {
+      super(props)
+      this.state = { showSecondWrappedElement: false }
+    }
+    render() {
+      return (
+        h(Provider, { store },
+          h(RunContext, {
+              onResolve: (failedTasks) => {
+                if (!this.state.showSecondWrappedElement) {
+                  // This is the first time onResolve is called, which should only dispatch
+                  // the Wrapped component.
+                  t.equal(failedTasks.length, 1, 'resolves with failed tasks')
+                  t.equal(wrapper.text(), 'Hello Error!', 'updates state after task completion')
+
+                  t.equal(dispatchSpy.callCount, 2)
+
+                  t.deepEqual(dispatchSpy.firstCall.args[0], {
+                    type: MESSAGE,
+                    payload: 'Hello Alice!'
+                  }, 'dispatches first action')
+
+                  t.deepEqual(dispatchSpy.secondCall.args[0], {
+                    type: ERROR,
+                    payload: 'Boo-urns'
+                  }, 'dispatches second action')
+
+                  // Now show the second `onMount: true` element
+                  this.setState({ showSecondWrappedElement: true })
+                } else {
+                  // This is the second time the onResolve is called, which is caused by
+                  // the WrappedRunOnMount being mounted with `transact({ onMount: true })`.
+                  t.equal(dispatchSpy.callCount, 3)
+                  t.deepEqual(dispatchSpy.thirdCall.args[0], {
+                    type: MESSAGE,
+                    payload: 'Bye!'
+                  }, 'supports dispatches on mount')
+                  t.end()
+                }
+              }
+            },
+            h('div', {}, [
+              h(Wrapped),
+              this.state.showSecondWrappedElement ? h(WrappedRunOnMount) : null
+            ])
+          )
+        )
+      )
+    }
+  }
+
+  const element = h(Root)
+
+  const wrapper = mount(element)
 })
+
 
 const MESSAGE = 'MESSAGE'
 const ERROR = 'ERROR'
 
-const Greeter = ({ name }) => React.createElement('p', {
+const Greeter = ({ name }) => h('p', {
   className: 'message'
 }, [`Hello ${name}!`])
 
