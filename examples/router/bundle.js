@@ -16198,7 +16198,7 @@ var TaskQueue = function () {
         _classCallCheck(this, TaskQueue);
 
         this.queue = [];
-        this.pending = Promise.resolve();
+        this.pending = Promise.resolve([]);
     }
 
     _createClass(TaskQueue, [{
@@ -16364,10 +16364,7 @@ var RunContext = function (_React$Component) {
 
                     _this2.queue.push(mapTaskRuns);
                     if (opts.immediate) {
-                        // Push to next tick to avoid state updates before mounting
-                        setTimeout(function () {
-                            return _this2.runTasks(_this2.props);
-                        }, 0);
+                        _this2.runTasks(_this2.props);
                     }
                 }
             };
@@ -16389,12 +16386,12 @@ var RunContext = function (_React$Component) {
         value: function componentWillReceiveProps(nextProps) {
             var _this3 = this;
 
-            // Only call run if there are tasks to run, otherwise `onResolve` will trigger unnecessarily.
-            if (this.queue.size > 0) {
-                setTimeout(function () {
-                    return _this3.runTasks(nextProps);
-                }, 0);
-            }
+            setTimeout(function () {
+                // Only call run if there are tasks to run, otherwise `onResolve` will trigger unnecessarily.
+                if (_this3.queue.size > 0) {
+                    _this3.runTasks(nextProps);
+                }
+            }, 0);
         }
     }, {
         key: 'render',
@@ -35338,13 +35335,13 @@ var Colors = (0, _reactTransact.transact)()(function (state, props) {
   return [(0, _reactTransact.taskCreator)('ERROR', 'COLOR_CHANGED', function () {
     return 'black';
   })(), (0, _reactTransact.taskCreator)('ERROR', 'COLOR_CHANGED', function () {
-    return (0, _delay2.default)('yellow', 2000);
+    return (0, _delay2.default)('yellow', 1000);
   })(), (0, _reactTransact.taskCreator)('ERROR', 'COLOR_CHANGED', function () {
-    return (0, _delay2.default)('red', 4000);
+    return (0, _delay2.default)('red', 2000);
   })(), (0, _reactTransact.taskCreator)('ERROR', 'COLOR_CHANGED', function () {
-    return (0, _delay2.default)('blue', 6000);
+    return (0, _delay2.default)('blue', 3000);
   })(), (0, _reactTransact.taskCreator)('ERROR', 'COLOR_CHANGED', function () {
-    return (0, _delay2.default)('green', 8000);
+    return (0, _delay2.default)('green', 4000);
   })()];
 })((0, _reactRedux.connect)(function (state) {
   return {
@@ -35405,7 +35402,7 @@ var delay = function delay(ms) {
 
 var Echo = (0, _reactTransact.transact)()(function (state, props) {
   return (0, _ramda.scan)(function (acc, task) {
-    return acc.chain(task).map(delay(1000));
+    return acc.chain(task).map(delay(500));
   }, say(props.params.what), [repeat, repeat, repeat, repeat, repeat]);
 })((0, _reactRedux.connect)(function (state) {
   return {
@@ -35447,13 +35444,13 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var Greeting = (0, _reactTransact.transact)()(function (state, props) {
   return [(0, _reactTransact.taskCreator)('ERROR', 'NAME_CHANGED', function () {
-    return (0, _delay2.default)('Alice', 2000);
+    return (0, _delay2.default)('Alice', 1000);
   })(), (0, _reactTransact.taskCreator)('ERROR', 'NAME_CHANGED', function () {
-    return (0, _delay2.default)('Bob', 4000);
+    return (0, _delay2.default)('Bob', 2000);
   })(), (0, _reactTransact.taskCreator)('ERROR', 'NAME_CHANGED', function () {
-    return (0, _delay2.default)(null, 6000, true);
+    return (0, _delay2.default)(null, 3000, true);
   })(), (0, _reactTransact.taskCreator)('ERROR', 'NAME_CHANGED', function () {
-    return (0, _delay2.default)('World', 8000);
+    return (0, _delay2.default)('World', 4000);
   })()];
 })((0, _reactRedux.connect)(function (state) {
   return {

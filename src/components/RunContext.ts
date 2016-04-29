@@ -41,8 +41,7 @@ export default class RunContext extends React.Component<IProps,void> {
       resolve: (mapTaskRuns: IMapTasks, opts: IResolveOptions = defaultResolveOpts): void => {
         this.queue.push(mapTaskRuns)
         if (opts.immediate) {
-          // Push to next tick to avoid state updates before mounting
-          setTimeout(() => this.runTasks(this.props), 0)
+          this.runTasks(this.props)
         }
       }
     }
@@ -63,10 +62,12 @@ export default class RunContext extends React.Component<IProps,void> {
   }
 
   componentWillReceiveProps(nextProps) {
-    // Only call run if there are tasks to run, otherwise `onResolve` will trigger unnecessarily.
-    if (this.queue.size > 0) {
-      setTimeout(() => this.runTasks(nextProps), 0)
-    }
+    setTimeout(() => {
+      // Only call run if there are tasks to run, otherwise `onResolve` will trigger unnecessarily.
+      if (this.queue.size > 0) {
+        this.runTasks(nextProps)
+      }
+    }, 0)
   }
 
   render() {

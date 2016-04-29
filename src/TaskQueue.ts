@@ -6,7 +6,7 @@ class TaskQueue {
 
   constructor() {
     this.queue = []
-    this.pending = Promise.resolve()
+    this.pending = Promise.resolve([])
   }
 
   get size() {

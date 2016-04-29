@@ -15,7 +15,7 @@ const delay = (ms) => (x) => new Promise((res) => {
 const Echo = transact()((state, props) => (
   scan(
     (acc, task) => {
-      return acc.chain(task).map(delay(1000))
+      return acc.chain(task).map(delay(500))
     },
     say(props.params.what),
     [

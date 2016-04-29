@@ -4,10 +4,10 @@ import { connect } from 'react-redux'
 import delay from './delay'
 
 const Greeting = transact()((state, props) => [
-  taskCreator('ERROR', 'NAME_CHANGED', () => delay('Alice', 2000))(),
-  taskCreator('ERROR', 'NAME_CHANGED', () => delay('Bob', 4000))(),
-  taskCreator('ERROR', 'NAME_CHANGED', () => delay(null, 6000, true))(),
-  taskCreator('ERROR', 'NAME_CHANGED', () => delay('World', 8000))()
+  taskCreator('ERROR', 'NAME_CHANGED', () => delay('Alice', 1000))(),
+  taskCreator('ERROR', 'NAME_CHANGED', () => delay('Bob', 2000))(),
+  taskCreator('ERROR', 'NAME_CHANGED', () => delay(null, 3000, true))(),
+  taskCreator('ERROR', 'NAME_CHANGED', () => delay('World', 4000))()
 ])(
   connect(
     state => ({

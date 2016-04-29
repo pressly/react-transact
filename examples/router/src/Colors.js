@@ -5,10 +5,10 @@ import delay from './delay'
 
 const Colors = transact()((state, props) => [
   taskCreator('ERROR', 'COLOR_CHANGED', () => 'black')(),
-  taskCreator('ERROR', 'COLOR_CHANGED', () => delay('yellow', 2000))(),
-  taskCreator('ERROR', 'COLOR_CHANGED', () => delay('red', 4000))(),
-  taskCreator('ERROR', 'COLOR_CHANGED', () => delay('blue', 6000))(),
-  taskCreator('ERROR', 'COLOR_CHANGED', () => delay('green', 8000))()
+  taskCreator('ERROR', 'COLOR_CHANGED', () => delay('yellow', 1000))(),
+  taskCreator('ERROR', 'COLOR_CHANGED', () => delay('red', 2000))(),
+  taskCreator('ERROR', 'COLOR_CHANGED', () => delay('blue', 3000))(),
+  taskCreator('ERROR', 'COLOR_CHANGED', () => delay('green', 4000))()
 ])(
   connect(state => ({
     color: state.color
