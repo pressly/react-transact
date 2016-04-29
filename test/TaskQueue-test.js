@@ -39,7 +39,7 @@ test('TaskQueue', (t) => {
 })
 
 test('TaskQueue#run (completion)', (t) => {
-  t.plan(9)
+  t.plan(10)
 
   const dispatch = sinon.spy()
   const queue = new TaskQueue()
@@ -81,5 +81,17 @@ test('TaskQueue#run (completion)', (t) => {
 
   p3.then(() => {
     t.equal(dispatch.callCount, 2, 'resolves promise when no computations are queued')
+  })
+
+  queue.push((state, props) => [
+    null,
+    undefined
+  ])
+
+  console.log('????????????????????')
+  const p4 = queue.run(dispatch, null, null)
+
+  p4.then(() => {
+    t.equal(dispatch.callCount, 2, 'resolves promise when mapped tasks are nil')
   })
 })

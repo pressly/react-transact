@@ -1,4 +1,5 @@
 import { IAction, IActionThunk, ITask, IMapTasks } from './interfaces'
+import { compact } from './helpers'
 
 type IResult = {
   task: ITask<any,any>
@@ -27,6 +28,8 @@ class TaskQueue {
     // WARNING: Mutation will occur.
     let newPending
 
+    console.log('#################')
+
     if (this.size === 0) {
       newPending = Promise.resolve([])
     } else {
@@ -40,7 +43,11 @@ class TaskQueue {
 
         currentQueue.forEach((f: IMapTasks) => {
           const x = f(state, props)
-          const tasks = Array.isArray(x) ? x : [x]
+          const tasks = compact(Array.isArray(x) ? x : [x])
+          // No tasks to run? Resolve immediately.
+          if (tasks.length === 0) {
+            res([])
+          }
           tasks.forEach((task: ITask<any,any>) => {
             count = count + 1
             
