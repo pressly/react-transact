@@ -39,7 +39,7 @@ test('TaskQueue', (t) => {
 })
 
 test('TaskQueue#run (completion)', (t) => {
-  t.plan(7)
+  t.plan(9)
 
   const dispatch = sinon.spy()
   const queue = new TaskQueue()
@@ -52,12 +52,16 @@ test('TaskQueue#run (completion)', (t) => {
 
   t.ok(typeof p.then === 'function', 'returns a promise')
 
-  p.then(() => {
+  p.then((results) => {
     t.ok(true, 'resolves promise on computation completion')
     t.equal(queue.size, 0, 'removes successfully completed tasks')
     t.deepEqual(dispatch.firstCall.args[0], {
       type: 'GOOD', payload: 'Alice says "Hello!"'
     })
+    t.equal(results.length, 1, 'returns results of tasks run')
+    t.deepEqual(results[0].action, {
+      type: 'GOOD', payload: 'Alice says "Hello!"'
+    }, 'action is returned')
   })
 
   queue.push((state, props) => [

@@ -128,11 +128,11 @@ test('RunContext with transact decorator (integration)', (t) => {
       return (
         h(Provider, { store },
           h(RunContext, {
-              onResolve: (failedTasks) => {
+              onResolve: (results) => {
                 if (!this.state.showSecondWrappedElement) {
                   // This is the first time onResolve is called, which should only dispatch
                   // the Wrapped component.
-                  t.equal(failedTasks.length, 1, 'resolves with failed tasks')
+                  t.equal(results.length, 2, 'resolves with results of tasks')
                   t.equal(wrapper.text(), 'Hello Error!', 'updates state after task completion')
 
                   t.equal(dispatchSpy.callCount, 2)

@@ -1,8 +1,14 @@
 import { IAction, IActionThunk, ITask, IMapTasks } from './interfaces'
 
+type IResult = {
+  task: ITask<any,any>
+  action: IAction<any>
+  rejected: boolean
+}
+
 class TaskQueue {
   private queue: Array<IMapTasks>
-  private pending: Promise<ITask<any,any>[]>
+  private pending: Promise<IResult[]>
 
   constructor() {
     this.queue = []
@@ -17,7 +23,7 @@ class TaskQueue {
     this.queue.push(a)
   }
 
-  run(dispatch: IActionThunk<any>, state: any, props: any): Promise<ITask<any,any>[]> {
+  run(dispatch: IActionThunk<any>, state: any, props: any): Promise<IResult[]> {
     // WARNING: Mutation will occur.
     let newPending
 
@@ -30,7 +36,7 @@ class TaskQueue {
       newPending = new Promise<any>((res) => {
         // WARNING: Watch out! These will mutate!
         let count = 0
-        let failedTasks = []
+        let results = []
 
         currentQueue.forEach((f: IMapTasks) => {
           f(state, props).forEach((task: ITask<any,any>) => {
@@ -41,27 +47,34 @@ class TaskQueue {
               (a: IAction<any>) => {
                 count = count - 1
                 dispatch(a)
-                failedTasks.push(task)
+
+                results.push({
+                  task, action: a, rejected: true
+                })
 
                 // Once the last computation finishes, resolve promise.
                 if (count === 0) {
-                  res(failedTasks)
+                  res(results)
                 }
               },
               (b: IAction<any>) => {
                 count = count - 1
                 dispatch(b)
 
+                results.push({
+                  task, action: b, rejected: false
+                })
+
                 // Once the last computation finishes, resolve promise.
                 if (count === 0) {
-                  res(failedTasks)
+                  res(results)
                 }
               }
             ), 0)
           })
         })
-      }).then((failedTasks: ITask<any,any>[]) => {
-        return failedTasks
+      }).then((results: IResult[]) => {
+        return results
       })
     }
     // Chaining the previous pending tasks so they will resolve in order.

@@ -16223,7 +16223,7 @@ var TaskQueue = function () {
                     newPending = new Promise(function (res) {
                         // WARNING: Watch out! These will mutate!
                         var count = 0;
-                        var failedTasks = [];
+                        var results = [];
                         currentQueue.forEach(function (f) {
                             f(state, props).forEach(function (task) {
                                 count = count + 1;
@@ -16233,24 +16233,29 @@ var TaskQueue = function () {
                                     return task.fork(function (a) {
                                         count = count - 1;
                                         dispatch(a);
-                                        failedTasks.push(task);
+                                        results.push({
+                                            task: task, action: a, rejected: true
+                                        });
                                         // Once the last computation finishes, resolve promise.
                                         if (count === 0) {
-                                            res(failedTasks);
+                                            res(results);
                                         }
                                     }, function (b) {
                                         count = count - 1;
                                         dispatch(b);
+                                        results.push({
+                                            task: task, action: b, rejected: false
+                                        });
                                         // Once the last computation finishes, resolve promise.
                                         if (count === 0) {
-                                            res(failedTasks);
+                                            res(results);
                                         }
                                     });
                                 }, 0);
                             });
                         });
-                    }).then(function (failedTasks) {
-                        return failedTasks;
+                    }).then(function (results) {
+                        return results;
                     });
                 })();
             }
@@ -35573,9 +35578,11 @@ _reactDom2.default.render(_react2.default.createElement(
       _reactRouter.Router,
       { history: _reactRouter.hashHistory,
         render: function render(props) {
-          return _react2.default.createElement(_router.RouterRunContext, _extends({ onResolve: function onResolve() {
-              return console.log('Resolved!');
-            } }, props));
+          return _react2.default.createElement(_router.RouterRunContext, _extends({
+            onResolve: function onResolve(results) {
+              return console.log('Resolved!', results);
+            }
+          }, props));
         } },
       _react2.default.createElement(
         _reactRouter.Route,

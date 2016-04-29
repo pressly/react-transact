@@ -15,7 +15,14 @@ ReactDOM.render(
   <div style={{ fontSize: '24px', textAlign: 'center' }}>
     <Provider store={store}>
       <Router history={hashHistory}
-              render={props => <RouterRunContext onResolve={() => console.log('Resolved!')} {...props}/>}>
+              render={props => (
+                 <RouterRunContext
+                  onResolve={
+                    (results) => console.log('Resolved!', results)
+                  }
+                  {...props}/>
+                )
+              }>
         <Route path="/" component={App}>
           <IndexRoute component={Colors}/>
           <Route path="echo/:what" component={Echo}/>
