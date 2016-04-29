@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { transact, taskCreator } from 'react-transact'
 import delay from './delay'
 
-const Colors = transact((state, props) => [
+const Colors = transact()((state, props) => [
   taskCreator('ERROR', 'COLOR_CHANGED', () => 'black')(),
   taskCreator('ERROR', 'COLOR_CHANGED', () => delay('yellow', 2000))(),
   taskCreator('ERROR', 'COLOR_CHANGED', () => delay('red', 4000))(),

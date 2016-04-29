@@ -16198,6 +16198,7 @@ var TaskQueue = function () {
         _classCallCheck(this, TaskQueue);
 
         this.queue = [];
+        this.pending = Promise.resolve();
     }
 
     _createClass(TaskQueue, [{
@@ -16210,39 +16211,54 @@ var TaskQueue = function () {
         value: function run(dispatch, state, props) {
             var _this = this;
 
-            return new Promise(function (res) {
-                // WATCH OUT! THIS WILL MUTATE
-                var count = 0;
-                var failedTasks = [];
-                _this.queue.forEach(function (f) {
-                    return f(state, props).forEach(function (task) {
-                        count = count + 1;
-                        // Bump to next tick so we give all tasks a chance to increment
-                        // count before being forked.
-                        setTimeout(function () {
-                            return task.fork(function (a) {
-                                count = count - 1;
-                                dispatch(a);
-                                failedTasks.push(task);
-                                // Once the last computation finishes, resolve promise.
-                                if (count === 0) {
-                                    res(failedTasks);
-                                }
-                            }, function (b) {
-                                count = count - 1;
-                                dispatch(b);
-                                // Once the last computation finishes, resolve promise.
-                                if (count === 0) {
-                                    res(failedTasks);
-                                }
+            // WARNING: Mutation will occur.
+            var newPending = void 0;
+            if (this.size === 0) {
+                newPending = Promise.resolve([]);
+            } else {
+                (function () {
+                    // WARNING: Mutating the queue so the next run call won't run through same queued tasks.
+                    var currentQueue = _this.queue;
+                    _this.queue = [];
+                    newPending = new Promise(function (res) {
+                        // WARNING: Watch out! These will mutate!
+                        var count = 0;
+                        var failedTasks = [];
+                        currentQueue.forEach(function (f) {
+                            f(state, props).forEach(function (task) {
+                                count = count + 1;
+                                // Bump to next tick so we give all tasks a chance to increment
+                                // count before being forked.
+                                setTimeout(function () {
+                                    return task.fork(function (a) {
+                                        count = count - 1;
+                                        dispatch(a);
+                                        failedTasks.push(task);
+                                        // Once the last computation finishes, resolve promise.
+                                        if (count === 0) {
+                                            res(failedTasks);
+                                        }
+                                    }, function (b) {
+                                        count = count - 1;
+                                        dispatch(b);
+                                        // Once the last computation finishes, resolve promise.
+                                        if (count === 0) {
+                                            res(failedTasks);
+                                        }
+                                    });
+                                }, 0);
                             });
-                        }, 0);
+                        });
+                    }).then(function (failedTasks) {
+                        return failedTasks;
                     });
-                });
-            }).then(function (failedTasks) {
-                _this.queue = [];
-                return failedTasks;
+                })();
+            }
+            // Chaining the previous pending tasks so they will resolve in order.
+            this.pending = this.pending.then(function () {
+                return newPending;
             });
+            return this.pending;
         }
     }, {
         key: "size",
@@ -16320,6 +16336,9 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var React = require('react');
 var TaskQueue_1 = require('./../TaskQueue');
+var defaultResolveOpts = {
+    immediate: false
+};
 
 var RunContext = function (_React$Component) {
     _inherits(RunContext, _React$Component);
@@ -16341,7 +16360,15 @@ var RunContext = function (_React$Component) {
 
             return {
                 resolve: function resolve(mapTaskRuns) {
+                    var opts = arguments.length <= 1 || arguments[1] === undefined ? defaultResolveOpts : arguments[1];
+
                     _this2.queue.push(mapTaskRuns);
+                    if (opts.immediate) {
+                        // Push to next tick to avoid state updates before mounting
+                        setTimeout(function () {
+                            return _this2.runTasks(_this2.props);
+                        }, 0);
+                    }
                 }
             };
         }
@@ -16362,9 +16389,12 @@ var RunContext = function (_React$Component) {
         value: function componentWillReceiveProps(nextProps) {
             var _this3 = this;
 
-            setTimeout(function () {
-                return _this3.runTasks(nextProps);
-            }, 0);
+            // Only call run if there are tasks to run, otherwise `onResolve` will trigger unnecessarily.
+            if (this.queue.size > 0) {
+                setTimeout(function () {
+                    return _this3.runTasks(nextProps);
+                }, 0);
+            }
         }
     }, {
         key: 'render',
@@ -16406,37 +16436,46 @@ var React = require('react');
 var getDisplayName = function getDisplayName(C) {
     return C.displayName || C.name || 'Component';
 };
+var defaultOpts = {
+    onMount: false
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = function (mapTasks) {
-    return function (Wrappee) {
-        var Wrapped = function (_React$Component) {
-            _inherits(Wrapped, _React$Component);
+exports.default = function () {
+    var opts = arguments.length <= 0 || arguments[0] === undefined ? defaultOpts : arguments[0];
+    return function (mapTasks) {
+        return function (Wrappee) {
+            var Wrapped = function (_React$Component) {
+                _inherits(Wrapped, _React$Component);
 
-            function Wrapped(props, context) {
-                _classCallCheck(this, Wrapped);
+                function Wrapped(props, context) {
+                    _classCallCheck(this, Wrapped);
 
-                var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Wrapped).call(this, props, context));
+                    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Wrapped).call(this, props, context));
 
-                _this.resolve = context.resolve || props.resolve;
-                _this.resolve(mapTasks);
-                return _this;
-            }
-
-            _createClass(Wrapped, [{
-                key: 'render',
-                value: function render() {
-                    return React.createElement(Wrappee, this.props);
+                    _this.resolve = context.resolve || props.resolve;
+                    if (typeof _this.resolve !== 'function') {
+                        throw new Error('Cannot find function `resolve` from context or props. Perhaps you forgot to mount `RunContext` as a parent?');
+                    }
+                    _this.resolve(mapTasks, { immediate: opts.onMount });
+                    return _this;
                 }
-            }]);
 
+                _createClass(Wrapped, [{
+                    key: 'render',
+                    value: function render() {
+                        return React.createElement(Wrappee, Object.assign({}, this.props, { resolve: this.resolve }));
+                    }
+                }]);
+
+                return Wrapped;
+            }(React.Component);
+
+            Wrapped.displayName = 'Dispatches(' + getDisplayName(Wrappee) + ')';
+            Wrapped.contextTypes = {
+                resolve: React.PropTypes.func.isRequired
+            };
             return Wrapped;
-        }(React.Component);
-
-        Wrapped.displayName = 'Dispatches(' + getDisplayName(Wrappee) + ')';
-        Wrapped.contextTypes = {
-            resolve: React.PropTypes.func
         };
-        return Wrapped;
     };
 };
 },{"react":245}],106:[function(require,module,exports){
@@ -35295,7 +35334,7 @@ var _delay2 = _interopRequireDefault(_delay);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var Colors = (0, _reactTransact.transact)(function (state, props) {
+var Colors = (0, _reactTransact.transact)()(function (state, props) {
   return [(0, _reactTransact.taskCreator)('ERROR', 'COLOR_CHANGED', function () {
     return 'black';
   })(), (0, _reactTransact.taskCreator)('ERROR', 'COLOR_CHANGED', function () {
@@ -35364,7 +35403,7 @@ var delay = function delay(ms) {
   };
 };
 
-var Echo = (0, _reactTransact.transact)(function (state, props) {
+var Echo = (0, _reactTransact.transact)()(function (state, props) {
   return (0, _ramda.scan)(function (acc, task) {
     return acc.chain(task).map(delay(1000));
   }, say(props.params.what), [repeat, repeat, repeat, repeat, repeat]);
@@ -35406,7 +35445,7 @@ var _delay2 = _interopRequireDefault(_delay);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var Greeting = (0, _reactTransact.transact)(function (state, props) {
+var Greeting = (0, _reactTransact.transact)()(function (state, props) {
   return [(0, _reactTransact.taskCreator)('ERROR', 'NAME_CHANGED', function () {
     return (0, _delay2.default)('Alice', 2000);
   })(), (0, _reactTransact.taskCreator)('ERROR', 'NAME_CHANGED', function () {

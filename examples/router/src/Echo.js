@@ -12,7 +12,7 @@ const delay = (ms) => (x) => new Promise((res) => {
   setTimeout(() => res(x), ms)
 })
 
-const Echo = transact((state, props) => (
+const Echo = transact()((state, props) => (
   scan(
     (acc, task) => {
       return acc.chain(task).map(delay(1000))
