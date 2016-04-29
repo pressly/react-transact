@@ -39,7 +39,7 @@ test('TaskQueue', (t) => {
 })
 
 test('TaskQueue#run (completion)', (t) => {
-  t.plan(3)
+  t.plan(4)
 
   const dispatch = sinon.spy()
   const queue = new TaskQueue()
@@ -55,5 +55,11 @@ test('TaskQueue#run (completion)', (t) => {
   p.then(() => {
     t.ok(true, 'resolves promise on computation completion')
     t.equal(queue.size, 0, 'removes successfully completed tasks')
+
+    const p2 = queue.run(dispatch, null, null)
+
+    p2.then(() => {
+      t.ok(true, 'resolves promise when no computations are queued')
+    })
   })
 })
