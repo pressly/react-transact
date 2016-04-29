@@ -66,10 +66,10 @@ test('Task#map', (t) => {
 
   const k = Task.resolve({ type: 'VALUE', payload: 'Hello' })
 
-  k.map(s => `${s} World!`).fork((action) => {
+  k.map(s => `${s} World!`).map(s => Promise.resolve(s.toUpperCase())).fork((action) => {
     t.deepEqual(action, {
       type: 'VALUE',
-      payload: 'Hello World!'
+      payload: 'HELLO WORLD!'
     }, 'maps over payload')
   })
 })
