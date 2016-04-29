@@ -33,6 +33,16 @@ test('transact decorator (empty)', (t) => {
   t.ok(result.find('.message').length > 0)
   t.equal(result.find('.message').text(), 'Hello Alice!')
 
+  // Guards
+  t.throws(() => {
+    mount(
+      h(Wrapped, {
+        resolve: null,
+        name: 'Alice'
+      })
+    )
+  }, /RunContext/, 'resolve must be a function')
+
   t.end()
 })
 

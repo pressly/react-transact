@@ -16,7 +16,7 @@ export default (opts: IDecoratorOptions = defaultOpts) => (mapTasks: IMapTasks):
     class Wrapped extends React.Component<IProps,void> {
       static displayName = `Dispatches(${getDisplayName(Wrappee)})`
       static contextTypes = {
-        resolve: React.PropTypes.func
+        resolve: React.PropTypes.func.isRequired
       }
 
       context: IProps
@@ -25,11 +25,14 @@ export default (opts: IDecoratorOptions = defaultOpts) => (mapTasks: IMapTasks):
       constructor(props, context) {
         super(props, context)
         this.resolve = context.resolve || props.resolve
+        if (typeof this.resolve !== 'function') {
+          throw new Error('Cannot find function `resolve` from context or props. Perhaps you forgot to mount `RunContext` as a parent?')
+        }
         this.resolve(mapTasks, { immediate: opts.onMount })
       }
 
       render() {
-        return React.createElement(Wrappee, this.props)
+        return React.createElement(Wrappee, Object.assign({}, this.props, { resolve: this.resolve }))
       }
     }
 
