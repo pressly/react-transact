@@ -4,7 +4,7 @@
   "description": "Data transaction manager for react",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jaysoo/react-transact"
+    "url": "https://github.com/pressly/react-transact"
   },
   "main": "index.js",
   "files": [
