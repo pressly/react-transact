@@ -1,6 +1,6 @@
 {
   "name": "react-transact",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Data transaction manager for react",
   "repository": {
     "type": "git",
@@ -19,8 +19,7 @@
     "clean": "rm -rf lib dist",
     "build": "npm run clean; node_modules/.bin/tsc; node_modules/.bin/babel lib --out-dir dist",
     "test": "npm run test:tape",
-    "test:tape": "npm run build; node_modules/.bin/tape 'test/**/*.js'",
-    "test:watch": "node_modules/.bin/nodemon -i lib -e 'js,ts' -x 'npm run test:tape'"
+    "test:tape": "npm run build; node_modules/.bin/tape 'test/**/*.js'"
   },
   "author": {
     "name": "Jack Hsu",

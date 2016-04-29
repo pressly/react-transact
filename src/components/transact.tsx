@@ -19,6 +19,8 @@ const defaultOpts = {
 export default (mapTasks: IMapTasks, opts: IDecoratorOptions = defaultOpts): Function => {
   return (Wrappee: any): any => {
     class Wrapped extends React.Component<IProps,void> {
+      // For router context
+      static _mapTasks = mapTasks
       static displayName = `Transact(${getDisplayName(Wrappee)})`
       static contextTypes = {
         transact: React.PropTypes.object

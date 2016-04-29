@@ -42,18 +42,22 @@ export default class RunContext extends React.Component<IProps,void> {
   getChildContext() {
     return {
       transact: {
-        resolve: (mapTaskRuns: IMapTasks, opts: IResolveOptions = defaultResolveOpts): void => {
-          this.queue.push(mapTaskRuns)
-          if (opts.immediate) {
-            this.runTasks(this.props)
-          }
-        },
-        run: (task: ITask<any,any>) => {
-          this.queue.push(() => task)
-          this.runTasks(this.props)
-        }
+        resolve: this.resolve.bind(this),
+        run: this.run.bind(this)
       }
     }
+  }
+
+  resolve(mapTaskRuns: IMapTasks, opts: IResolveOptions = defaultResolveOpts): void {
+    this.queue.push(mapTaskRuns)
+    if (opts.immediate) {
+      this.runTasks(this.props)
+    }
+  }
+
+  run(task: ITask<any,any>): void {
+    this.queue.push(() => task)
+    this.runTasks(this.props)
   }
 
   runTasks(props): void {
