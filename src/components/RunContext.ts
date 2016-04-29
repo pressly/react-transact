@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { IMapTasks, IStore, IResolveOptions } from './../interfaces'
+import { IMapTasks, IStore, IResolveOptions, ITask } from './../interfaces'
 import TaskQueue from './../TaskQueue'
 
 type IProps = {
@@ -19,7 +19,10 @@ export default class RunContext extends React.Component<IProps,void> {
     store: React.PropTypes.object.isRequired
   }
   static childContextTypes = {
-    resolve: React.PropTypes.func
+    transact: React.PropTypes.shape({
+      resolve: React.PropTypes.func,
+      run: React.PropTypes.func
+    })
   }
   static defaultProps = {
     onResolve: () => {}
@@ -38,9 +41,15 @@ export default class RunContext extends React.Component<IProps,void> {
 
   getChildContext() {
     return {
-      resolve: (mapTaskRuns: IMapTasks, opts: IResolveOptions = defaultResolveOpts): void => {
-        this.queue.push(mapTaskRuns)
-        if (opts.immediate) {
+      transact: {
+        resolve: (mapTaskRuns: IMapTasks, opts: IResolveOptions = defaultResolveOpts): void => {
+          this.queue.push(mapTaskRuns)
+          if (opts.immediate) {
+            this.runTasks(this.props)
+          }
+        },
+        run: (task: ITask<any,any>) => {
+          this.queue.push(() => task)
           this.runTasks(this.props)
         }
       }

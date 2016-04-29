@@ -16225,7 +16225,9 @@ var TaskQueue = function () {
                         var count = 0;
                         var results = [];
                         currentQueue.forEach(function (f) {
-                            f(state, props).forEach(function (task) {
+                            var x = f(state, props);
+                            var tasks = Array.isArray(x) ? x : [x];
+                            tasks.forEach(function (task) {
                                 count = count + 1;
                                 // Bump to next tick so we give all tasks a chance to increment
                                 // count before being forked.
@@ -16289,57 +16291,6 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var React = require('react');
-var react_router_1 = require('react-router');
-var RunContext_1 = require('./RunContext');
-
-var RouterRunContext = function (_React$Component) {
-    _inherits(RouterRunContext, _React$Component);
-
-    function RouterRunContext() {
-        _classCallCheck(this, RouterRunContext);
-
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(RouterRunContext).apply(this, arguments));
-    }
-
-    _createClass(RouterRunContext, [{
-        key: 'render',
-        value: function render() {
-            var props = Object.assign({}, this.props);
-            var render = props.render;
-            props.render = undefined;
-            return React.createElement(RunContext_1.default, { store: this.context.store || props.store, onResolve: props.onResolve, params: props.params, location: props.location }, render(props));
-        }
-    }]);
-
-    return RouterRunContext;
-}(React.Component);
-
-RouterRunContext.displayName = 'RouterRunContext';
-RouterRunContext.propTypes = {
-    render: React.PropTypes.func
-};
-RouterRunContext.contextTypes = {
-    store: React.PropTypes.object.isRequired
-};
-RouterRunContext.defaultProps = {
-    render: function render(props) {
-        return React.createElement(react_router_1.RouterContext, props);
-    }
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = RouterRunContext;
-},{"./RunContext":104,"react":245,"react-router":93}],104:[function(require,module,exports){
-"use strict";
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var React = require('react');
 var TaskQueue_1 = require('./../TaskQueue');
 var defaultResolveOpts = {
     immediate: false
@@ -16364,11 +16315,19 @@ var RunContext = function (_React$Component) {
             var _this2 = this;
 
             return {
-                resolve: function resolve(mapTaskRuns) {
-                    var opts = arguments.length <= 1 || arguments[1] === undefined ? defaultResolveOpts : arguments[1];
+                transact: {
+                    resolve: function resolve(mapTaskRuns) {
+                        var opts = arguments.length <= 1 || arguments[1] === undefined ? defaultResolveOpts : arguments[1];
 
-                    _this2.queue.push(mapTaskRuns);
-                    if (opts.immediate) {
+                        _this2.queue.push(mapTaskRuns);
+                        if (opts.immediate) {
+                            _this2.runTasks(_this2.props);
+                        }
+                    },
+                    run: function run(task) {
+                        _this2.queue.push(function () {
+                            return task;
+                        });
                         _this2.runTasks(_this2.props);
                     }
                 }
@@ -16416,14 +16375,17 @@ RunContext.contextTypes = {
     store: React.PropTypes.object.isRequired
 };
 RunContext.childContextTypes = {
-    resolve: React.PropTypes.func
+    transact: React.PropTypes.shape({
+        resolve: React.PropTypes.func,
+        run: React.PropTypes.func
+    })
 };
 RunContext.defaultProps = {
     onResolve: function onResolve() {}
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = RunContext;
-},{"./../TaskQueue":102,"react":245}],105:[function(require,module,exports){
+},{"./../TaskQueue":102,"react":245}],104:[function(require,module,exports){
 "use strict";
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -16442,45 +16404,46 @@ var defaultOpts = {
     onMount: false
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = function () {
-    var opts = arguments.length <= 0 || arguments[0] === undefined ? defaultOpts : arguments[0];
-    return function (mapTasks) {
-        return function (Wrappee) {
-            var Wrapped = function (_React$Component) {
-                _inherits(Wrapped, _React$Component);
+exports.default = function (mapTasks) {
+    var opts = arguments.length <= 1 || arguments[1] === undefined ? defaultOpts : arguments[1];
 
-                function Wrapped(props, context) {
-                    _classCallCheck(this, Wrapped);
+    return function (Wrappee) {
+        var Wrapped = function (_React$Component) {
+            _inherits(Wrapped, _React$Component);
 
-                    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Wrapped).call(this, props, context));
+            function Wrapped(props, context) {
+                _classCallCheck(this, Wrapped);
 
-                    _this.resolve = context.resolve || props.resolve;
-                    if (typeof _this.resolve !== 'function') {
-                        throw new Error('Cannot find function `resolve` from context or props. Perhaps you forgot to mount `RunContext` as a parent?');
-                    }
-                    _this.resolve(mapTasks, { immediate: opts.onMount });
-                    return _this;
+                var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Wrapped).call(this, props, context));
+
+                _this.transact = context.transact || props.transact;
+                if (_this.transact === null || _this.transact === undefined) {
+                    throw new Error('Cannot find `transact` from context or props. Perhaps you forgot to mount `RunContext` as a parent?');
                 }
+                if (typeof mapTasks === 'function') {
+                    _this.transact.resolve(mapTasks, { immediate: opts.onMount });
+                }
+                return _this;
+            }
 
-                _createClass(Wrapped, [{
-                    key: 'render',
-                    value: function render() {
-                        return React.createElement(Wrappee, Object.assign({}, this.props, { resolve: this.resolve }));
-                    }
-                }]);
+            _createClass(Wrapped, [{
+                key: 'render',
+                value: function render() {
+                    return React.createElement(Wrappee, Object.assign({}, this.props, { transact: this.transact }));
+                }
+            }]);
 
-                return Wrapped;
-            }(React.Component);
-
-            Wrapped.displayName = 'Dispatches(' + getDisplayName(Wrappee) + ')';
-            Wrapped.contextTypes = {
-                resolve: React.PropTypes.func.isRequired
-            };
             return Wrapped;
+        }(React.Component);
+
+        Wrapped.displayName = 'Transact(' + getDisplayName(Wrappee) + ')';
+        Wrapped.contextTypes = {
+            transact: React.PropTypes.object
         };
+        return Wrapped;
     };
 };
-},{"react":245}],106:[function(require,module,exports){
+},{"react":245}],105:[function(require,module,exports){
 "use strict";
 
 var Task_1 = require('./Task');
@@ -16498,7 +16461,58 @@ exports.default = {
     Task: Task_1.default,
     RunContext: RunContext_1.default
 };
-},{"./Task":101,"./components/RunContext":104,"./components/transact":105,"./taskCreator":107}],107:[function(require,module,exports){
+},{"./Task":101,"./components/RunContext":103,"./components/transact":104,"./taskCreator":107}],106:[function(require,module,exports){
+"use strict";
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var React = require('react');
+var react_router_1 = require('react-router');
+var RunContext_1 = require('./../components/RunContext');
+
+var RouterRunContext = function (_React$Component) {
+    _inherits(RouterRunContext, _React$Component);
+
+    function RouterRunContext() {
+        _classCallCheck(this, RouterRunContext);
+
+        return _possibleConstructorReturn(this, Object.getPrototypeOf(RouterRunContext).apply(this, arguments));
+    }
+
+    _createClass(RouterRunContext, [{
+        key: 'render',
+        value: function render() {
+            var props = Object.assign({}, this.props);
+            var render = props.render;
+            props.render = undefined;
+            return React.createElement(RunContext_1.default, { store: this.context.store || props.store, onResolve: props.onResolve, params: props.params, location: props.location }, render(props));
+        }
+    }]);
+
+    return RouterRunContext;
+}(React.Component);
+
+RouterRunContext.displayName = 'RouterRunContext';
+RouterRunContext.propTypes = {
+    render: React.PropTypes.func
+};
+RouterRunContext.contextTypes = {
+    store: React.PropTypes.object.isRequired
+};
+RouterRunContext.defaultProps = {
+    render: function render(props) {
+        return React.createElement(react_router_1.RouterContext, props);
+    }
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = RouterRunContext;
+},{"./../components/RunContext":103,"react":245,"react-router":93}],107:[function(require,module,exports){
 "use strict";
 
 var Task_1 = require('./Task');
@@ -16530,10 +16544,10 @@ exports.default = function (rejectType, resolveType, fn) {
 },{"./Task":101}],108:[function(require,module,exports){
 module.exports = require('./dist').default
 
-},{"./dist":106}],109:[function(require,module,exports){
-exports.RouterRunContext = require('./dist/components/RouterRunContext').default
+},{"./dist":105}],109:[function(require,module,exports){
+exports.RouterRunContext = require('./dist/router/RouterRunContext').default
 
-},{"./dist/components/RouterRunContext":103}],110:[function(require,module,exports){
+},{"./dist/router/RouterRunContext":106}],110:[function(require,module,exports){
 /**
  * Copyright 2013-present, Facebook, Inc.
  * All rights reserved.
@@ -35303,6 +35317,15 @@ var App = function App(_ref) {
           { activeClassName: 'active', onlyActiveOnIndex: true, to: '/greeting' },
           'Greeting'
         )
+      ),
+      _react2.default.createElement(
+        'li',
+        { style: itemStyle },
+        _react2.default.createElement(
+          _reactRouter.Link,
+          { activeClassName: 'active', onlyActiveOnIndex: true, to: '/message' },
+          'Message'
+        )
       )
     ),
     _react2.default.createElement(
@@ -35336,7 +35359,7 @@ var _delay2 = _interopRequireDefault(_delay);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var Colors = (0, _reactTransact.transact)()(function (state, props) {
+var Colors = (0, _reactTransact.transact)(function (state, props) {
   return [(0, _reactTransact.taskCreator)('ERROR', 'COLOR_CHANGED', function () {
     return 'black';
   })(), (0, _reactTransact.taskCreator)('ERROR', 'COLOR_CHANGED', function () {
@@ -35369,7 +35392,7 @@ Colors.displayName = 'Colors';
 
 exports.default = Colors;
 
-},{"./delay":266,"react":245,"react-redux":55,"react-transact":108}],263:[function(require,module,exports){
+},{"./delay":267,"react":245,"react-redux":55,"react-transact":108}],263:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -35405,7 +35428,7 @@ var delay = function delay(ms) {
   };
 };
 
-var Echo = (0, _reactTransact.transact)()(function (state, props) {
+var Echo = (0, _reactTransact.transact)(function (state, props) {
   return (0, _ramda.scan)(function (acc, task) {
     return acc.chain(task).map(delay(500));
   }, say(props.params.what), [repeat, repeat, repeat, repeat, repeat]);
@@ -35447,7 +35470,7 @@ var _delay2 = _interopRequireDefault(_delay);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var Greeting = (0, _reactTransact.transact)()(function (state, props) {
+var Greeting = (0, _reactTransact.transact)(function (state, props) {
   return [(0, _reactTransact.taskCreator)('ERROR', 'NAME_CHANGED', function () {
     return (0, _delay2.default)('Alice', 1000);
   })(), (0, _reactTransact.taskCreator)('ERROR', 'NAME_CHANGED', function () {
@@ -35477,7 +35500,93 @@ Greeting.displayName = 'Greeting';
 
 exports.default = Greeting;
 
-},{"./delay":266,"react":245,"react-redux":55,"react-transact":108}],265:[function(require,module,exports){
+},{"./delay":267,"react":245,"react-redux":55,"react-transact":108}],265:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _reactTransact = require('react-transact');
+
+var _reactRedux = require('react-redux');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var changeMessage = (0, _reactTransact.taskCreator)('MESSAGE_ERROR', 'MESSAGE_CHANGED', function (message) {
+  return message;
+});
+
+var Stateful = (0, _reactTransact.transact)()((0, _reactRedux.connect)(function (state) {
+  return { message: state.message };
+})(function (_React$Component) {
+  _inherits(_class, _React$Component);
+
+  function _class() {
+    _classCallCheck(this, _class);
+
+    return _possibleConstructorReturn(this, Object.getPrototypeOf(_class).apply(this, arguments));
+  }
+
+  _createClass(_class, [{
+    key: 'render',
+    value: function render() {
+      var _this2 = this;
+
+      var _props = this.props;
+      var message = _props.message;
+      var transact = _props.transact;
+
+      return _react2.default.createElement(
+        'div',
+        { className: 'content' },
+        _react2.default.createElement(
+          'p',
+          null,
+          'You said: "',
+          message,
+          '"'
+        ),
+        _react2.default.createElement(
+          'p',
+          null,
+          'Say something else:'
+        ),
+        _react2.default.createElement(
+          'form',
+          { onSubmit: function onSubmit(evt) {
+              evt.preventDefault();
+              transact.run(changeMessage(_this2.refs.input.value));
+            } },
+          _react2.default.createElement('input', { ref: 'input' }),
+          _react2.default.createElement(
+            'button',
+            null,
+            'Go'
+          )
+        )
+      );
+    }
+  }]);
+
+  return _class;
+}(_react2.default.Component)));
+
+exports.default = Stateful;
+
+},{"react":245,"react-redux":55,"react-transact":108}],266:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -35501,6 +35610,8 @@ exports.default = function () {
         return _extends({}, state, { name: action.payload, error: false });
       case 'ECHO':
         return _extends({}, state, { what: action.payload, error: false });
+      case 'MESSAGE_CHANGED':
+        return _extends({}, state, { message: action.payload, error: false });
       case 'ERROR':
         return _extends({}, state, { error: true });
       default:
@@ -35509,7 +35620,7 @@ exports.default = function () {
   }, initialState);
 };
 
-},{"redux":251}],266:[function(require,module,exports){
+},{"redux":251}],267:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -35525,7 +35636,7 @@ exports.default = function (value, ms) {
   });
 };
 
-},{}],267:[function(require,module,exports){
+},{}],268:[function(require,module,exports){
 'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -35564,6 +35675,10 @@ var _Greeting = require('./Greeting');
 
 var _Greeting2 = _interopRequireDefault(_Greeting);
 
+var _Message = require('./Message');
+
+var _Message2 = _interopRequireDefault(_Message);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var store = (0, _configureStore2.default)({ name: 'World', error: false });
@@ -35589,10 +35704,11 @@ _reactDom2.default.render(_react2.default.createElement(
         { path: '/', component: _App2.default },
         _react2.default.createElement(_reactRouter.IndexRoute, { component: _Colors2.default }),
         _react2.default.createElement(_reactRouter.Route, { path: 'echo/:what', component: _Echo2.default }),
-        _react2.default.createElement(_reactRouter.Route, { path: 'greeting', component: _Greeting2.default })
+        _react2.default.createElement(_reactRouter.Route, { path: 'greeting', component: _Greeting2.default }),
+        _react2.default.createElement(_reactRouter.Route, { path: 'message', component: _Message2.default })
       )
     )
   )
 ), document.getElementById('app'));
 
-},{"./App":261,"./Colors":262,"./Echo":263,"./Greeting":264,"./configureStore":265,"react":245,"react-dom":52,"react-redux":55,"react-router":93,"react-transact/router":109}]},{},[267]);
+},{"./App":261,"./Colors":262,"./Echo":263,"./Greeting":264,"./Message":265,"./configureStore":266,"react":245,"react-dom":52,"react-redux":55,"react-router":93,"react-transact/router":109}]},{},[268]);

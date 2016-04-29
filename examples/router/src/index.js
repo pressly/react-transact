@@ -8,6 +8,7 @@ import App from './App'
 import Colors from './Colors'
 import Echo from './Echo'
 import Greeting from './Greeting'
+import Message from './Message'
 
 const store = configureStore({ name: 'World', error: false })
 
@@ -27,6 +28,7 @@ ReactDOM.render(
           <IndexRoute component={Colors}/>
           <Route path="echo/:what" component={Echo}/>
           <Route path="greeting" component={Greeting}/>
+          <Route path="message" component={Message}/>
         </Route>
       </Router>
     </Provider>

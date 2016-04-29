@@ -15,6 +15,9 @@ const App = ({ children }) => (
       <li style={itemStyle}>
         <Link activeClassName="active" onlyActiveOnIndex={true} to="/greeting">Greeting</Link>
       </li>
+      <li style={itemStyle}>
+        <Link activeClassName="active" onlyActiveOnIndex={true} to="/message">Message</Link>
+      </li>
     </ul>
     <div style={{ flex: 1, display: 'flex' }}>
       { children }

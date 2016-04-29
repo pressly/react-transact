@@ -1,6 +1,6 @@
 # react-transact
 
-Handle continuation-style data transactions in a pure way.
+Handle data transactions in a declarative way.
 
 ## Example
 

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { RouterContext } from 'react-router'
-import RunContext from './RunContext'
+import RunContext from './../components/RunContext'
 import { IStore } from '../interfaces'
 
 type IProps = {

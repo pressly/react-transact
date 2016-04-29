@@ -1,38 +1,48 @@
 import * as React from 'react'
-import { IMapTasks, IDecoratorOptions, IResolveOptions } from './../interfaces'
+import { IMapTasks, IDecoratorOptions, IResolveOptions, ITask } from './../interfaces'
 
 const getDisplayName = (C: any): string => C.displayName || C.name || 'Component'
 
+type ITransact = {
+  resolve: (IMapTaskRuns, IResolveOptions) => void
+  run: (Array<ITask<any,any>> | ITask<any,any>)
+}
+
 type IProps = {
-  resolve: (IMapTasks)=> void
+  transact: ITransact
 }
 
 const defaultOpts = {
   onMount: false
 }
 
-export default (opts: IDecoratorOptions = defaultOpts) => (mapTasks: IMapTasks): Function => {
+export default (mapTasks: IMapTasks, opts: IDecoratorOptions = defaultOpts): Function => {
   return (Wrappee: any): any => {
     class Wrapped extends React.Component<IProps,void> {
-      static displayName = `Dispatches(${getDisplayName(Wrappee)})`
+      static displayName = `Transact(${getDisplayName(Wrappee)})`
       static contextTypes = {
-        resolve: React.PropTypes.func.isRequired
+        transact: React.PropTypes.object
       }
 
       context: IProps
-      resolve: (IMapTaskRuns, IResolveOptions) => void
+      transact: ITransact
 
       constructor(props, context) {
         super(props, context)
-        this.resolve = context.resolve || props.resolve
-        if (typeof this.resolve !== 'function') {
-          throw new Error('Cannot find function `resolve` from context or props. Perhaps you forgot to mount `RunContext` as a parent?')
+        this.transact = context.transact || props.transact
+        if (this.transact === null || this.transact === undefined) {
+          throw new Error('Cannot find `transact` from context or props. Perhaps you forgot to mount `RunContext` as a parent?')
         }
-        this.resolve(mapTasks, { immediate: opts.onMount })
+        if (typeof mapTasks === 'function') {
+          this.transact.resolve(mapTasks, { immediate: opts.onMount })
+        }
       }
 
       render() {
-        return React.createElement(Wrappee, Object.assign({}, this.props, { resolve: this.resolve }))
+        return React.createElement(
+          Wrappee,
+          Object.assign({}, this.props, { transact: this.transact })
+        )
       }
     }
 

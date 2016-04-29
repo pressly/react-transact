@@ -22,7 +22,7 @@ export interface ITaskCreator<A,B> {
 }
 
 export interface IMapTasks {
-  (state: any, props: any): Array<ITask<any,any>>
+  (state: any, props: any): Array<ITask<any,any>> | ITask<any,any>
 }
 
 export interface IStore {

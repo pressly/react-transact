@@ -16,7 +16,8 @@
     "README.md"
   ],
   "scripts": {
-    "build": "node_modules/.bin/tsc; node_modules/.bin/babel lib --out-dir dist",
+    "clean": "rm -rf lib dist",
+    "build": "npm run clean; node_modules/.bin/tsc; node_modules/.bin/babel lib --out-dir dist",
     "test": "npm run test:tape",
     "test:tape": "npm run build; node_modules/.bin/tape 'test/**/*.js'",
     "test:watch": "node_modules/.bin/nodemon -i lib -e 'js,ts' -x 'npm run test:tape'"

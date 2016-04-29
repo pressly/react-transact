@@ -39,8 +39,11 @@ class TaskQueue {
         let results = []
 
         currentQueue.forEach((f: IMapTasks) => {
-          f(state, props).forEach((task: ITask<any,any>) => {
+          const x = f(state, props)
+          const tasks = Array.isArray(x) ? x : [x]
+          tasks.forEach((task: ITask<any,any>) => {
             count = count + 1
+            
             // Bump to next tick so we give all tasks a chance to increment
             // count before being forked.
             setTimeout(() => task.fork(

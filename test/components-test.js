@@ -15,7 +15,7 @@ const h = React.createElement
 
 test('transact decorator (empty)', (t) => {
   const resolve = () => {}
-  const factory = transact()((state, props) => [])
+  const factory = transact((state, props) => [])
 
   t.ok(typeof factory === 'function', 'returns a higher-order component')
 
@@ -25,7 +25,7 @@ test('transact decorator (empty)', (t) => {
 
   const result = mount(
     h(Wrapped, {
-      resolve,
+      transact: { resolve },
       name: 'Alice'
     })
   )
@@ -37,11 +37,11 @@ test('transact decorator (empty)', (t) => {
   t.throws(() => {
     mount(
       h(Wrapped, {
-        resolve: null,
+        transact: null,
         name: 'Alice'
       })
     )
-  }, /RunContext/, 'resolve must be a function')
+  }, /RunContext/, 'transact must be present in context')
 
   t.end()
 })
@@ -53,12 +53,12 @@ test('transact decorator (with tasks)', (t) => {
     Task.resolve({ type: 'GOOD', payload: 42 })
   ]
 
-  const Wrapped = transact()(mapTasks)(Empty)
+  const Wrapped = transact(mapTasks)(Empty)
 
   mount(
     h('div', {}, [
-      h(Wrapped, { resolve }),
-      h(Wrapped, { resolve })
+      h(Wrapped, { transact: { resolve } }),
+      h(Wrapped, { transact: { resolve } })
     ])
   )
 
@@ -76,11 +76,11 @@ test('transact decorator (run on mount)', (t) => {
     Task.resolve({ type: 'GOOD', payload: 42 })
   ]
 
-  const Wrapped = transact({ onMount: true })(mapTasks)(Empty)
+  const Wrapped = transact(mapTasks, { onMount: true })(Empty)
 
   mount(
     h('div', {}, [
-      h(Wrapped, { resolve })
+      h(Wrapped, { transact: { resolve } })
     ])
   )
 
@@ -105,15 +105,15 @@ test('RunContext with transact decorator (integration)', (t) => {
     }))()
   ]
 
-  const Wrapped = transact()(mapTasks)(
+  const Wrapped = transact(mapTasks)(
     connect((state) => ({ message: state.message }))(
       Message
     )
   )
 
-  const WrappedRunOnMount = transact({ onMount: true })(() => [
+  const WrappedRunOnMount = transact(() => [
     Task.resolve({ type: MESSAGE, payload: 'Bye!' })
-  ])(
+  ], { onMount: true })(
     connect((state) => ({ message: state.message }))(
       Message
     )
@@ -151,7 +151,7 @@ test('RunContext with transact decorator (integration)', (t) => {
                   this.setState({ showSecondWrappedElement: true })
                 } else {
                   // This is the second time the onResolve is called, which is caused by
-                  // the WrappedRunOnMount being mounted with `transact({ onMount: true })`.
+                  // the WrappedRunOnMount being mounted with `transact(..., { onMount: true })`.
                   t.equal(dispatchSpy.callCount, 3)
                   t.deepEqual(dispatchSpy.thirdCall.args[0], {
                     type: MESSAGE,
@@ -175,7 +175,6 @@ test('RunContext with transact decorator (integration)', (t) => {
 
   const wrapper = mount(element)
 })
-
 
 const MESSAGE = 'MESSAGE'
 const ERROR = 'ERROR'
