@@ -1,7 +1,7 @@
 'use strict'
 
 const test = require('tape')
-const Task = require('../index').Task
+const Task = require('../lib').Task
 
 test('Task#fork (with two thunks)', (t) => {
   t.plan(2)

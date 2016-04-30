@@ -6,10 +6,10 @@ const Provider = require('react-redux').Provider
 const React = require('react')
 const test = require('tape')
 const sinon = require('sinon')
-const RunContext = require('../index').RunContext
-const transact = require('../index').transact
-const Task = require('../index').Task
-const taskCreator = require('../index').taskCreator
+const RunContext = require('../lib').RunContext
+const transact = require('../lib').transact
+const Task = require('../lib').Task
+const taskCreator = require('../lib').taskCreator
 
 const h = React.createElement
 

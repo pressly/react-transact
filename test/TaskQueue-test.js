@@ -1,6 +1,6 @@
 const test = require('tape')
 const sinon = require('sinon')
-const Task = require('../index').Task
+const Task = require('../lib').Task
 const TaskQueue = require('../lib/TaskQueue').default
 
 test('TaskQueue', (t) => {

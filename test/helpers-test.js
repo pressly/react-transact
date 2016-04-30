@@ -1,5 +1,5 @@
 const test = require('tape')
-const h = require('../dist/helpers')
+const h = require('../lib/helpers')
 
 test('compact', (t) => {
   t.deepEqual(
