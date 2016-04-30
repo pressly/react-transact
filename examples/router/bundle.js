@@ -16139,6 +16139,13 @@ var Task = function () {
                 });
             });
         }
+        // Alias for chain
+
+    }, {
+        key: 'then',
+        value: function then(g) {
+            return this.chain(g);
+        }
     }, {
         key: 'map',
         value: function map(g) {
@@ -16179,6 +16186,27 @@ var Task = function () {
                 rej(action);
             });
         }
+        /*
+         * When given a function and a task, returns a task that when forked will
+         * first apply the returned action (either A or B) the supplied function.
+         * The resulting action is then chained.
+         */
+
+    }, {
+        key: 'tap',
+        value: function tap(fn) {
+            return function (task) {
+                return new Task(function (rej, res) {
+                    task.fork(function (a) {
+                        fn(a);
+                        rej(a);
+                    }, function (b) {
+                        fn(b);
+                        res(b);
+                    });
+                });
+            };
+        }
     }]);
 
     return Task;
@@ -16194,6 +16222,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var helpers_1 = require('./helpers');
+var Task_1 = require('./Task');
 
 var TaskQueue = function () {
     function TaskQueue() {
@@ -16204,15 +16233,20 @@ var TaskQueue = function () {
     }
 
     _createClass(TaskQueue, [{
-        key: "push",
+        key: 'push',
         value: function push(a) {
             this.queue.push(a);
         }
+        // TODO: Refactor this method so there isn't so many mutations going on!
+
     }, {
-        key: "run",
-        value: function run(dispatch, state, props) {
+        key: 'run',
+        value: function run(thunk, state, props) {
             var _this = this;
 
+            // If a component applies transformations using `.chain` but need to commit one of the intermediary
+            // actions to the system, then this commit function can be used.
+            var commit = Task_1.default.tap(thunk);
             // WARNING: Mutation will occur.
             var newPending = void 0;
             if (this.size === 0) {
@@ -16227,7 +16261,7 @@ var TaskQueue = function () {
                         var count = 0;
                         var results = [];
                         currentQueue.forEach(function (f) {
-                            var x = f(state, props);
+                            var x = f(state, props, commit);
                             var tasks = helpers_1.compact(Array.isArray(x) ? x : [x]);
                             // No tasks to run? Resolve immediately.
                             if (tasks.length === 0) {
@@ -16240,7 +16274,7 @@ var TaskQueue = function () {
                                 setTimeout(function () {
                                     return task.fork(function (a) {
                                         count = count - 1;
-                                        dispatch(a);
+                                        thunk(a);
                                         results.push({
                                             task: task, action: a, rejected: true
                                         });
@@ -16250,7 +16284,7 @@ var TaskQueue = function () {
                                         }
                                     }, function (b) {
                                         count = count - 1;
-                                        dispatch(b);
+                                        thunk(b);
                                         results.push({
                                             task: task, action: b, rejected: false
                                         });
@@ -16274,7 +16308,7 @@ var TaskQueue = function () {
             return this.pending;
         }
     }, {
-        key: "size",
+        key: 'size',
         get: function get() {
             return this.queue.length;
         }
@@ -16285,7 +16319,7 @@ var TaskQueue = function () {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = TaskQueue;
-},{"./helpers":105}],103:[function(require,module,exports){
+},{"./Task":101,"./helpers":105}],103:[function(require,module,exports){
 "use strict";
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -16297,7 +16331,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var React = require('react');
-var TaskQueue_1 = require('./../TaskQueue');
+var TaskQueue_1 = require('../TaskQueue');
 var defaultResolveOpts = {
     immediate: false
 };
@@ -16395,7 +16429,7 @@ RunContext.defaultProps = {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = RunContext;
-},{"./../TaskQueue":102,"react":246}],104:[function(require,module,exports){
+},{"../TaskQueue":102,"react":246}],104:[function(require,module,exports){
 "use strict";
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -16463,6 +16497,16 @@ exports.compact = function (a) {
     return a.filter(function (x) {
         return x !== null && typeof x !== 'undefined';
     });
+};
+/*
+ * Applies the value `A` or `Promise<A>` to the function `fn`
+ */
+exports.applyValueOrPromise = function (fn, x) {
+    if (typeof x.then === 'function') {
+        x.then(fn);
+    } else {
+        fn(x);
+    }
 };
 },{}],106:[function(require,module,exports){
 "use strict";
@@ -35411,7 +35455,7 @@ var _delay2 = _interopRequireDefault(_delay);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var Colors = (0, _reactTransact.transact)(function (state, props) {
+var Colors = (0, _reactTransact.transact)(function (state, props, commit) {
   return [(0, _reactTransact.taskCreator)('ERROR', 'COLOR_CHANGED', function () {
     return 'black';
   })(), (0, _reactTransact.taskCreator)('ERROR', 'COLOR_CHANGED', function () {
@@ -35480,9 +35524,12 @@ var delay = function delay(ms) {
   };
 };
 
-var Echo = (0, _reactTransact.transact)(function (state, props) {
-  return (0, _ramda.scan)(function (acc, task) {
-    return acc.chain(task).map(delay(500));
+var Echo = (0, _reactTransact.transact)(function (state, props, commit) {
+  return (0, _ramda.reduce)(function (task, next) {
+    return commit(task) // This will commit the resulting from this task action
+    .chain(next) // Chain the resulting action to the next task
+    .map(delay(500)) // Map a 500ms delay before resolving task.
+    ;
   }, say(props.params.what), [repeat, repeat, repeat, repeat, repeat]);
 })((0, _reactRedux.connect)(function (state) {
   return {
@@ -35522,7 +35569,7 @@ var _delay2 = _interopRequireDefault(_delay);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var Greeting = (0, _reactTransact.transact)(function (state, props) {
+var Greeting = (0, _reactTransact.transact)(function (state, props, commit) {
   return [(0, _reactTransact.taskCreator)('ERROR', 'NAME_CHANGED', function () {
     return (0, _delay2.default)('Alice', 1000);
   })(), (0, _reactTransact.taskCreator)('ERROR', 'NAME_CHANGED', function () {
@@ -35581,7 +35628,9 @@ var changeMessage = (0, _reactTransact.taskCreator)('MESSAGE_ERROR', 'MESSAGE_CH
   return message;
 });
 
-var Stateful = (0, _reactTransact.transact)()((0, _reactRedux.connect)(function (state) {
+var Message = (0, _reactTransact.transact)()(
+// No tasks to transact on route change.
+(0, _reactRedux.connect)(function (state) {
   return { message: state.message };
 })(function (_React$Component) {
   _inherits(_class, _React$Component);
@@ -35636,7 +35685,7 @@ var Stateful = (0, _reactTransact.transact)()((0, _reactRedux.connect)(function 
   return _class;
 }(_react2.default.Component)));
 
-exports.default = Stateful;
+exports.default = Message;
 
 },{"react":246,"react-redux":55,"react-transact":109}],267:[function(require,module,exports){
 'use strict';

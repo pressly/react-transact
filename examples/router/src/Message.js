@@ -8,10 +8,13 @@ const changeMessage = taskCreator(
   (message) => message
 )  
 
-const Stateful = transact()(
-  connect(
-    state => ({ message: state.message})
-  )(
+const Message =
+transact(
+  // No tasks to transact on route change.
+)(
+connect(
+  state => ({ message: state.message})
+)(
   class extends React.Component {
     render() {
       const { message, transact } = this.props
@@ -35,4 +38,4 @@ const Stateful = transact()(
   }
 ))
 
-export default Stateful
+export default Message

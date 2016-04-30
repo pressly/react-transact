@@ -3,7 +3,7 @@ import { taskCreator, transact } from 'react-transact'
 import { connect } from 'react-redux'
 import delay from './delay'
 
-const Greeting = transact((state, props) => [
+const Greeting = transact((state, props, commit) => [
   taskCreator('ERROR', 'NAME_CHANGED', () => delay('Alice', 1000))(),
   taskCreator('ERROR', 'NAME_CHANGED', () => delay('Bob', 2000))(),
   taskCreator('ERROR', 'NAME_CHANGED', () => delay(null, 3000, true))(),
