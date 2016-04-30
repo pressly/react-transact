@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { IMapTasks, IDecoratorOptions, IResolveOptions, ITask } from './../interfaces'
+import {IMapTasks, IDecoratorOptions, IResolveOptions, ITask, IChainTask} from './../interfaces'
 
 const getDisplayName = (C: any): string => C.displayName || C.name || 'Component'
 

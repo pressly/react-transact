@@ -1,19 +1,14 @@
 import * as React from 'react'
 import { IMapTasks, IStore, IResolveOptions, ITask } from './../interfaces'
-import TaskQueue from './../TaskQueue'
-
-type IProps = {
-  onResolve: Function
-  store: IStore
-  location: any
-  params: any
-}
+import Task from '../Task'
+import TaskQueue from '../TaskQueue'
+import { tap } from '../effects'
 
 const defaultResolveOpts = {
   immediate: false
 }
 
-export default class RunContext extends React.Component<IProps,void> {
+export default class RunContext extends React.Component<any,void> {
   static displayName = 'RunContext'
   static contextTypes = {
     store: React.PropTypes.object.isRequired
@@ -28,8 +23,7 @@ export default class RunContext extends React.Component<IProps,void> {
     onResolve: () => {}
   }
 
-  context: IProps
-
+  context: any
   store: IStore
   queue: TaskQueue
 

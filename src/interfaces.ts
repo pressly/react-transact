@@ -17,12 +17,16 @@ export interface ITask<A,B> {
   chain<A2,B2>(g: (arg: any) => ITask<A2,B2>): ITask<A|A2,B2>
 }
 
+export interface IChainTask<A,B> {
+  (x: any): ITask<A,B>
+}
+
 export interface ITaskCreator<A,B> {
   (a: A, b: B, f: Function): ITask<A,B>
 }
 
 export interface IMapTasks {
-  (state: any, props: any): Array<ITask<any,any>> | ITask<any,any>
+  (state: any, props: any, commit: IChainTask<any,any>): Array<ITask<any,any>> | ITask<any,any>
 }
 
 export interface IStore {

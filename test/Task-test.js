@@ -1,6 +1,7 @@
 'use strict'
 
 const test = require('tape')
+const sinon = require('sinon')
 const Task = require('../lib').Task
 
 test('Task#fork (with two thunks)', (t) => {
@@ -101,5 +102,16 @@ test('Task.reject', (t) => {
       type: 'BAD',
       payload: 'Oops'
     }, 'returns rejected task')
+  })
+})
+
+test('Task#tap', (t) => {
+  const task = Task.resolve({ type: 'GOOD', payload: 'Hello' })
+  const spy = sinon.spy()
+  Task.tap(spy)(task).fork((action) => {
+    t.deepEqual(action, { type: 'GOOD', payload: 'Hello' })
+    t.ok(spy.called, 'tap is called')
+    t.deepEqual(spy.firstCall.args[0], { type: 'GOOD', payload: 'Hello' }, 'tap is called with action')
+    t.end()
   })
 })

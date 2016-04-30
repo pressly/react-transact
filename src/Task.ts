@@ -15,6 +15,28 @@ class Task<A,B> implements ITask<A,B> {
     })
   }
 
+  /*
+   * When given a function and a task, returns a task that when forked will
+   * first apply the returned action (either A or B) the supplied function.
+   * The resulting action is then chained.
+   */
+  static tap<A,B>(fn: Function) {
+    return (task: ITask<A,B>): ITask<A,B> => {
+      return new Task((rej:IActionThunk<A>, res:IActionThunk<B>) => {
+        task.fork(
+          (a:IAction<A>) => {
+            fn(a)
+            rej(a)
+          },
+          (b:IAction<B>) => {
+            fn(b)
+            res(b)
+          }
+        )
+      })
+    }
+  }
+
   constructor(computation: IComputation<A,B>) {
     this.computation = computation
   }

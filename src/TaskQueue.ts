@@ -1,5 +1,6 @@
 import { IAction, IActionThunk, ITask, IMapTasks } from './interfaces'
 import { compact } from './helpers'
+import Task from './Task'
 
 type IResult = {
   task: ITask<any,any>
@@ -24,7 +25,12 @@ class TaskQueue {
     this.queue.push(a)
   }
 
-  run(dispatch: IActionThunk<any>, state: any, props: any): Promise<IResult[]> {
+  // TODO: Refactor this method so there isn't so many mutations going on!
+  run(thunk: IActionThunk<any>, state: any, props: any): Promise<IResult[]> {
+    // If a component applies transformations using `.chain` but need to commit one of the intermediary
+    // actions to the system, then this commit function can be used.
+    const commit = Task.tap(thunk)
+
     // WARNING: Mutation will occur.
     let newPending
 
@@ -40,7 +46,7 @@ class TaskQueue {
         let results = []
 
         currentQueue.forEach((f: IMapTasks) => {
-          const x = f(state, props)
+          const x = f(state, props, commit)
           const tasks = compact(Array.isArray(x) ? x : [x])
           // No tasks to run? Resolve immediately.
           if (tasks.length === 0) {
@@ -54,7 +60,7 @@ class TaskQueue {
             setTimeout(() => task.fork(
               (a: IAction<any>) => {
                 count = count - 1
-                dispatch(a)
+                thunk(a)
 
                 results.push({
                   task, action: a, rejected: true
@@ -67,7 +73,7 @@ class TaskQueue {
               },
               (b: IAction<any>) => {
                 count = count - 1
-                dispatch(b)
+                thunk(b)
 
                 results.push({
                   task, action: b, rejected: false

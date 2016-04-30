@@ -90,29 +90,41 @@ test('transact decorator (run on mount)', (t) => {
   t.end()
 })
 
-test('RunContext with transact decorator (integration)', (t) => {
+/*
+ * This test covers all of the basic usages of @transact decorator. It is pretty long,
+ * but is more of a journey test than integration. :)
+ */
+test('RunContext with transact decorator (journey)', (t) => {
   const store = makeStore({
     message: ''
   })
   const dispatchSpy = sinon.spy(store, 'dispatch')
   const Message = ({ message }) => h('p', {}, [ message ])
-  const mapTasks = (state, props) => [
-    Task.resolve({ type: MESSAGE, payload: 'Hello Alice!' }),
-    taskCreator(ERROR, MESSAGE, () => new Promise((res, rej) => {
-      setTimeout(() => {
-        rej('Boo-urns')
-      }, 10)
-    }))()
-  ]
 
-  const Wrapped = transact(mapTasks)(
+  const Wrapped = transact(
+    (state, props) => [
+      Task.resolve({ type: MESSAGE, payload: 'Hello Alice!' }),
+      taskCreator(ERROR, MESSAGE, () => new Promise((res, rej) => {
+        setTimeout(() => {
+          rej('Boo-urns')
+        }, 10)
+      }))()
+    ]
+  )(
     connect((state) => ({ message: state.message }))(
       Message
     )
   )
 
-  const WrappedRunOnMount = transact(() => [
-    Task.resolve({ type: MESSAGE, payload: 'Bye!' })
+  // This component will not be mounted until `showSecondWrappedElement` is set to true.
+  const WrappedRunOnMount = transact((state, props, commit) => [
+    // Commits the resulting action from here first.
+    commit(
+      Task.resolve({ type: MESSAGE, payload: 'Bye' })
+      .map(x => `${x} Alice`)
+    )
+    // Then the resulting action from here will commit as well.
+    .map(x => `${x}!`)
   ], { onMount: true })(
     connect((state) => ({ message: state.message }))(
       Message
@@ -152,11 +164,19 @@ test('RunContext with transact decorator (integration)', (t) => {
                 } else {
                   // This is the second time the onResolve is called, which is caused by
                   // the WrappedRunOnMount being mounted with `transact(..., { onMount: true })`.
-                  t.equal(dispatchSpy.callCount, 3)
+
+                  t.equal(dispatchSpy.callCount, 4) // There was a commit in the middle of the chain.
+
                   t.deepEqual(dispatchSpy.thirdCall.args[0], {
                     type: MESSAGE,
-                    payload: 'Bye!'
-                  }, 'supports dispatches on mount')
+                    payload: 'Bye Alice'
+                  }, 'intermediary action committed')
+
+                  t.deepEqual(dispatchSpy.getCall(3).args[0], {
+                    type: MESSAGE,
+                    payload: 'Bye Alice!'
+                  }, 'last action in the chain is also committed')
+
                   t.end()
                 }
               }
