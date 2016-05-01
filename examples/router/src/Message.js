@@ -13,7 +13,7 @@ transact(
   // No tasks to transact on route change.
 )(
 connect(
-  state => ({ message: state.message})
+  state => ({ message: state.message })
 )(
   class extends React.Component {
     render() {
