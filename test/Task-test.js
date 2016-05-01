@@ -2,7 +2,7 @@
 
 const test = require('tape')
 const sinon = require('sinon')
-const Task = require('../lib').Task
+const Task = require('../lib/internals/Task').default
 
 test('Task#fork (with two thunks)', (t) => {
   t.plan(2)

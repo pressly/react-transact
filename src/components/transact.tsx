@@ -1,11 +1,11 @@
 import * as React from 'react'
-import {IMapTasks, IDecoratorOptions, IResolveOptions, ITask, IChainTask} from './../interfaces'
+import { IMapTasks, IDecoratorOptions, ITask, MapperWithProps, IResolveOptions } from './../interfaces'
 
 const getDisplayName = (C: any): string => C.displayName || C.name || 'Component'
 
 type ITransact = {
-  resolve: (IMapTaskRuns, IResolveOptions) => void
-  run: (Array<ITask<any,any>> | ITask<any,any>)
+  resolve: (mapper: MapperWithProps, opts: IResolveOptions) => void
+  run: (mapper: MapperWithProps, props: any) => void
 }
 
 type IProps = {
@@ -36,7 +36,7 @@ export default (mapTasks: IMapTasks, opts: IDecoratorOptions = defaultOpts): Fun
           throw new Error('Cannot find `transact` from context or props. Perhaps you forgot to mount `RunContext` as a parent?')
         }
         if (typeof mapTasks === 'function') {
-          this.transact.resolve(mapTasks, { immediate: opts.onMount })
+          this.transact.resolve({ props, mapper: mapTasks }, { immediate: opts.onMount })
         }
       }
 

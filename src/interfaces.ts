@@ -29,6 +29,11 @@ export interface IMapTasks {
   (state: any, props: any, commit: IChainTask<any,any>): Array<ITask<any,any>> | ITask<any,any>
 }
 
+export type MapperWithProps = {
+  props: any,
+  mapper: IMapTasks
+}
+
 export interface IStore {
   dispatch: (action: IAction<any>) => void
   getState: () => any

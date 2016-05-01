@@ -6,10 +6,10 @@ const Provider = require('react-redux').Provider
 const React = require('react')
 const test = require('tape')
 const sinon = require('sinon')
-const RunContext = require('../lib').RunContext
-const transact = require('../lib').transact
-const Task = require('../lib').Task
-const taskCreator = require('../lib').taskCreator
+const RunContext = require('../lib/components/RunContext').default
+const transact = require('../lib/components/transact').default
+const Task = require('../lib/internals/Task').default
+const taskCreator = require('../lib/internals/taskCreator').default
 
 const h = React.createElement
 
@@ -63,8 +63,8 @@ test('transact decorator (with tasks)', (t) => {
   )
 
   t.equal(resolve.callCount, 2, 'calls resolve for each @transact component')
-  t.equal(resolve.firstCall.args[0], mapTasks, 'calls resolve with task run mapper')
-  t.equal(resolve.secondCall.args[0], mapTasks, 'calls resolve with task run mapper')
+  t.equal(resolve.firstCall.args[0].mapper, mapTasks, 'calls resolve with task run mapper')
+  t.equal(resolve.secondCall.args[0].mapper, mapTasks, 'calls resolve with task run mapper')
 
   t.end()
 })
@@ -84,7 +84,7 @@ test('transact decorator (run on mount)', (t) => {
     ])
   )
 
-  t.equal(resolve.firstCall.args[0], mapTasks, 'calls resolve with task run mapper')
+  t.equal(resolve.firstCall.args[0].mapper, mapTasks, 'calls resolve with task run mapper')
   t.deepEqual(resolve.firstCall.args[1], { immediate: true }, 'enables immediate flag')
 
   t.end()

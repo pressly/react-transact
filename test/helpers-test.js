@@ -1,6 +1,6 @@
 const test = require('tape')
 const sinon = require('sinon')
-const h = require('../lib/helpers')
+const h = require('../lib/internals/helpers')
 
 test('compact', (t) => {
   t.deepEqual(

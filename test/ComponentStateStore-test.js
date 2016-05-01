@@ -1,5 +1,5 @@
 const test = require('tape')
-const ComponentStateStore = require('../lib/ComponentStateStore').default
+const ComponentStateStore = require('../lib/internals/ComponentStateStore').default
 
 test('ComponentStateStore', (t) => {
   let state = {}

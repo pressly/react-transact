@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { IMapTasks, IStore, IResolveOptions, ITask } from './../interfaces'
+import { MapperWithProps, IStore, IResolveOptions, ITask } from './../interfaces'
 import TaskQueue from '../internals/TaskQueue'
 import ComponentStateStore, { INIT } from '../internals/ComponentStateStore'
 
@@ -57,23 +57,22 @@ export default class RunContext extends React.Component<any,any> {
     }
   }
 
-  resolve(mapTaskRuns: IMapTasks, opts: IResolveOptions = defaultResolveOpts): void {
+  resolve(mapTaskRuns: MapperWithProps, opts: IResolveOptions = defaultResolveOpts): void {
     this.queue.push(mapTaskRuns)
     if (opts.immediate) {
       this.runTasks(this.props)
     }
   }
 
-  run(tasks: Array<ITask<any,any>> | ITask<any,any>): void {
-    this.queue.push(() => tasks)
+  run(tasks: Array<ITask<any,any>> | ITask<any,any>, props: any): void {
+    this.queue.push({ mapper: () => tasks, props })
     this.runTasks(this.props)
   }
 
   runTasks(props): void {
     this.queue.run(
       this.store.dispatch,
-      this.store.getState(),
-      props
+      this.store.getState()
     ).then((failedTasks) => {
       props.onResolve(failedTasks)
     })

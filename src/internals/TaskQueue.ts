@@ -1,15 +1,15 @@
-import { IAction, IActionThunk, ITask, IMapTasks } from './../interfaces'
+import { IAction, IActionThunk, ITask, IMapTasks, MapperWithProps } from './../interfaces'
 import { compact } from './helpers'
 import Task from './Task'
 
 type IResult = {
   task: ITask<any,any>
-  action: IAction<any>
+  action: IAction<any>,
   rejected: boolean
 }
 
 class TaskQueue {
-  private queue: Array<IMapTasks>
+  private queue: Array<MapperWithProps>
   private pending: Promise<IResult[]>
 
   constructor() {
@@ -21,19 +21,18 @@ class TaskQueue {
     return this.queue.length
   }
 
-  push(a: IMapTasks) {
+  push(a: MapperWithProps) {
     this.queue.push(a)
   }
 
   // TODO: Refactor this method so there isn't so many mutations going on!
-  run(thunk: IActionThunk<any>, state: any, props: any): Promise<IResult[]> {
+  run(thunk: IActionThunk<any>, state: any): Promise<IResult[]> {
     // If a component applies transformations using `.chain` but need to commit one of the intermediary
     // actions to the system, then this commit function can be used.
     const commit = Task.tap(thunk)
 
     // WARNING: Mutation will occur.
     let newPending
-
     if (this.size === 0) {
       newPending = Promise.resolve([])
     } else {
@@ -45,8 +44,8 @@ class TaskQueue {
         let count = 0
         let results = []
 
-        currentQueue.forEach((f: IMapTasks) => {
-          const x = f(state, props, commit)
+        currentQueue.forEach((m: MapperWithProps) => {
+          const x = m.mapper(state, m.props, commit)
           const tasks = compact(Array.isArray(x) ? x : [x])
           // No tasks to run? Resolve immediately.
           if (tasks.length === 0) {
@@ -54,7 +53,7 @@ class TaskQueue {
           }
           tasks.forEach((task: ITask<any,any>) => {
             count = count + 1
-            
+
             // Bump to next tick so we give all tasks a chance to increment
             // count before being forked.
             setTimeout(() => task.fork(
