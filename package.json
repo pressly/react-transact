@@ -1,6 +1,6 @@
 {
   "name": "react-transact",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Data transaction manager for react",
   "repository": {
     "type": "git",
