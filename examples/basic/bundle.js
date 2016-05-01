@@ -19954,6 +19954,11 @@ module.exports = require('./lib/React');
 },{"./lib/React":64}],177:[function(require,module,exports){
 'use strict';
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.delay = undefined;
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _dec, _class;
@@ -19976,24 +19981,60 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+/*
+ * Action types that can be handled in this application.
+ */
+var MESSAGE_CHANGED = 'MESSAGE_CHANGED';
+var MESSAGE_ERROR = 'MESSAGE_ERROR';
+
+/*
+ * This is the state reducer for the `RunContext` component. The local state
+ * of `RunContext` will be passed down to `Container` component as props.
+ */
 var reducer = function reducer() {
   var state = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
   var action = arguments[1];
 
-  if (action.type === 'MESSAGE') {
-    return { message: action.payload };
-  } else {
-    return state;
+  // When the MESSAGE_CHANGED action is dispatched, store its payload on state.
+  switch (action.type) {
+    case MESSAGE_CHANGED:
+      return { message: action.payload, hasError: false };
+    case MESSAGE_ERROR:
+      return { message: action.payload.message, hasError: true };
+    default:
+      return state;
   }
 };
 
-var setMessage = (0, _reactTransact.taskCreator)('ERROR', 'MESSAGE', function (msg) {
-  return msg;
+// When called with a message string, causes `MESSAGE_CHANGED` to be dispatched.
+// On error, the `MESSAGE_ERROR` is dispatched.
+var setMessage = (0, _reactTransact.taskCreator)(MESSAGE_ERROR, MESSAGE_CHANGED, function (msg) {
+  // When we see the substring of 'error', fail this task.
+  if (msg.toUpperCase().indexOf('ERROR') !== -1) {
+    throw new Error(msg);
+    // Otherwise, succeed with the message.
+  } else {
+      return msg;
+    }
 });
 
+// Helper to delay value dispatches. Used in the @transact below.
+var delay = exports.delay = function delay(ms) {
+  return function (x) {
+    return new Promise(function (res) {
+      setTimeout(function () {
+        return res(x);
+      }, ms);
+    });
+  };
+};
+
+var welcome = [setMessage('Welcome to the basic example. :)'), setMessage('You can write your own message here.').map(delay(1500)), setMessage('Have fun!').map(delay(3000))];
+
+// When this component is mounted, dispatch the actions from the supplied tasks.
 var Messenger = (_dec = (0, _reactTransact.transact)(function (state, props, commit) {
-  return [setMessage('Hi! :)')];
-}), _dec(_class = function (_Component) {
+  return welcome;
+}, { onMount: true }), _dec(_class = function (_Component) {
   _inherits(Messenger, _Component);
 
   function Messenger() {
@@ -20014,19 +20055,31 @@ var Messenger = (_dec = (0, _reactTransact.transact)(function (state, props, com
           'form',
           { onSubmit: function onSubmit(evt) {
               evt.preventDefault();
-              _this2.props.transact.run(setMessage(_this2.refs.input.value));
+              var run = _this2.props.transact.run;
+              var value = _this2.refs.input.value;
+
+
+              if (value.toUpperCase() === 'RESTART') {
+                run(welcome);
+              } else if (value) {
+                run(setMessage(value));
+              } else {
+                run(setMessage('Hmm, you left the message empty. Was that an error? :('));
+              }
+
+              _this2.refs.input.value = '';
             } },
-          _react2.default.createElement(
-            'label',
-            null,
-            'Write something else:',
-            _react2.default.createElement('input', { autoFocus: true, ref: 'input' })
-          ),
+          _react2.default.createElement('input', { placeholder: 'Write something else', autoFocus: true, ref: 'input' }),
           _react2.default.createElement(
             'button',
             null,
             'Go'
           )
+        ),
+        _react2.default.createElement(
+          'p',
+          { className: 'hint' },
+          '(Psst, try typing "restart" or an empty string "")'
         )
       );
     }
@@ -20038,17 +20091,17 @@ var Messenger = (_dec = (0, _reactTransact.transact)(function (state, props, com
 
 var Container = function Container(_ref) {
   var message = _ref.message;
+  var hasError = _ref.hasError;
 
   return _react2.default.createElement(
     'div',
     { className: 'container' },
     _react2.default.createElement(
       'div',
-      null,
+      { className: hasError ? 'error' : '' },
       _react2.default.createElement(
         'p',
         { className: 'message' },
-        'Current message: ',
         _react2.default.createElement(
           'em',
           null,

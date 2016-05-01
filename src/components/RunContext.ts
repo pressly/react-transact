@@ -64,8 +64,8 @@ export default class RunContext extends React.Component<any,any> {
     }
   }
 
-  run(task: ITask<any,any>): void {
-    this.queue.push(() => task)
+  run(tasks: Array<ITask<any,any>> | ITask<any,any>): void {
+    this.queue.push(() => tasks)
     this.runTasks(this.props)
   }
 
