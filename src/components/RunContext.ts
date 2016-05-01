@@ -1,23 +1,28 @@
 import * as React from 'react'
 import { IMapTasks, IStore, IResolveOptions, ITask } from './../interfaces'
-import Task from '../Task'
 import TaskQueue from '../TaskQueue'
-import { tap } from '../effects'
+import ComponentStateStore from '../ComponentStateStore'
 
 const defaultResolveOpts = {
   immediate: false
 }
 
+const { func, object, shape } = React.PropTypes
+
 export default class RunContext extends React.Component<any,void> {
   static displayName = 'RunContext'
   static contextTypes = {
-    store: React.PropTypes.object.isRequired
+    store: object.isRequired
   }
   static childContextTypes = {
-    transact: React.PropTypes.shape({
-      resolve: React.PropTypes.func,
-      run: React.PropTypes.func
+    transact: shape({
+      resolve: func,
+      run: func
     })
+  }
+  static propsTypes = {
+    onResolve: func,
+    stateReducer: func
   }
   static defaultProps = {
     onResolve: () => {}
@@ -29,7 +34,11 @@ export default class RunContext extends React.Component<any,void> {
 
   constructor(props, context) {
     super(props, context)
-    this.store = context.store || props.store
+    if (typeof props.stateReducer === 'undefined') {
+      this.store = context.store || props.store
+    } else {
+      this.store = ComponentStateStore(props.stateReducer, () => this.state, this.setState)
+    }
     this.queue = new TaskQueue()
   }
 

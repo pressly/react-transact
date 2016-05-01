@@ -31,8 +31,8 @@ export interface IMapTasks {
 
 export interface IStore {
   dispatch: (action: IAction<any>) => void
-  subscribe: (f: Function) => () => void
-  getState: ()=> any
+  getState: () => any
+  replaceReducer: ((any, IAction) => void)
 }
 
 export type IResolveOptions = {
