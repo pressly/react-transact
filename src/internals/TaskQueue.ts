@@ -1,4 +1,4 @@
-import { IAction, IActionThunk, ITask, IMapTasks } from './interfaces'
+import { IAction, IActionThunk, ITask, IMapTasks } from './../interfaces'
 import { compact } from './helpers'
 import Task from './Task'
 

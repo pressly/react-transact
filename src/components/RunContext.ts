@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { IMapTasks, IStore, IResolveOptions, ITask } from './../interfaces'
-import TaskQueue from '../TaskQueue'
-import ComponentStateStore, { INIT } from '../ComponentStateStore'
+import TaskQueue from '../internals/TaskQueue'
+import ComponentStateStore, { INIT } from '../internals/ComponentStateStore'
 
 const defaultResolveOpts = {
   immediate: false

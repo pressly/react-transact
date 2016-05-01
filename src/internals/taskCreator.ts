@@ -1,4 +1,4 @@
-import { IActionThunk, ITaskCreator } from './interfaces'
+import { IActionThunk, ITaskCreator } from './../interfaces'
 import Task from './Task'
 
 export default <A,B>(rejectType: A, resolveType: B, fn: Function): ITaskCreator<A,B> => {

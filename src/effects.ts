@@ -1,6 +1,6 @@
-import Task from './Task'
+import Task from './internals/Task'
 import { IActionThunk, IChainTask } from './interfaces'
-import { applyValueOrPromise } from './helpers'
+import { applyValueOrPromise } from './internals/helpers'
 
 /*
  * When given a function and a value, returns a new Task that, when forked,

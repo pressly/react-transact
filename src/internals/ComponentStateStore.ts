@@ -1,4 +1,4 @@
-import { IStore, IAction } from './interfaces'
+import { IStore, IAction } from './../interfaces'
 
 export const INIT = { type: '@@INIT' }
 

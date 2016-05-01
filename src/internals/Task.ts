@@ -1,4 +1,4 @@
-import { IAction, IActionThunk, IComputation, ITask } from './interfaces'
+import { IAction, IActionThunk, IComputation, ITask } from './../interfaces'
 
 class Task<A,B> implements ITask<A,B> {
   computation: IComputation<A,B>

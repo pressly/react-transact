@@ -1,6 +1,6 @@
-import Task from './Task'
+import Task from './internals/Task'
 import transact from './components/transact'
-import taskCreator from './taskCreator'
+import taskCreator from './internals/taskCreator'
 import RunContext from './components/RunContext'
 
 export {
