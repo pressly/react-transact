@@ -11,27 +11,33 @@ This is an example of printing "Hello World!" on the screen using react-transact
 <script src="https://npmcdn.com/react@15.0.2/dist/react.js"></script>
 <script src="https://npmcdn.com/react-dom@15.0.2/dist/react-dom.js"></script>
 <script src="../../umd/ReactTransact.js"></script>
-<script type="text/ecmascript-6">
-  const h = React.createElement
+<script>
+  var h = React.createElement
+
   // Creates a function that returns a Task when invoked.
-  const sendMessage = ReactTransact.taskCreator(
-    'ERROR', 'MESSAGE', x => x
+  var sendMessage = ReactTransact.taskCreator(
+    'ERROR', 'MESSAGE', function (x) { return x }
   )
+
   // Wrap the HelloWorld component with @transact decorator.
-  const HelloWorld = ReactTransact.transact(
-    () => [ sendMessage('Hello World!') ]
+  var HelloWorld = ReactTransact.transact(
+    function () { return [ sendMessage('Hello World!') ] }
   )(
     // The state prop is coming from RunContext.
-    ({ state }) => h('h1', {}, [state.message])
+    function (props) {
+      return h('h1', {}, [props.state.message])
+    }
   )
+
   // Reducer for our RunContext's local component state. (no redux!)
-  const stateReducer = (state, action) => {
+  function stateReducer(state, action) {
     if (action.type === 'MESSAGE') {
       return { message: action.payload }
     } else {
       return (state || {})
     }
   }
+
   ReactDOM.render(
     h(ReactTransact.RunContext, { stateReducer },
       h(HelloWorld)
