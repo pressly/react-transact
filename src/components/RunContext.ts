@@ -95,6 +95,6 @@ export default class RunContext extends React.Component<any,any> {
   render() {
     const { children } = this.props
     const onlyChild = React.Children.only(children)
-    return React.cloneElement(onlyChild, this.state)
+    return React.cloneElement(onlyChild, { state: this.state })
   }
 }

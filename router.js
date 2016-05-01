@@ -1,1 +1,1 @@
-exports.RouterRunContext = require('./dist/router/RouterRunContext').default
+exports.RouterRunContext = require('./lib/router/RouterRunContext').default

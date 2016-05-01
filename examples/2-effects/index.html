@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<!--
+This is an example of printing "Hello World!" on the screen using react-transact.
+-->
+<html>
+<head>
+  <title>React Transact Effects Example</title>
+  <style>
+    html, body, h1 {
+      padding: 0;
+      margin: 0;
+    }
+    .container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+<script src="https://npmcdn.com/react@15.0.2/dist/react.js"></script>
+<script src="https://npmcdn.com/react-dom@15.0.2/dist/react-dom.js"></script>
+<script src="../../umd/ReactTransact.js"></script>
+<script>
+  const h = React.createElement
+  // Creates a delay before resolve a value.
+  const delay = (ms) => (x) => new Promise((res) => {
+    setTimeout(() => res(x), ms)
+  })
+  const sendMessage = ReactTransact.taskCreator(
+    'ERROR', 'MESSAGE', x => x
+  )
+  const changeColor = ReactTransact.taskCreator(
+    'ERROR', 'COLOR', x => x
+  )
+  const changeBackgroundColor = ReactTransact.taskCreator(
+    'ERROR', 'BACKGROUND_COLOR', x => x
+  )
+  const uppercase = s => s.toUpperCase()
+  // Wrap the Container component with @transact decorator.
+  const Container = ReactTransact.transact(
+    (state, props, commit) => [
+      sendMessage('Hello World!'),
+      changeColor('blue').map(delay(500)),
+      changeColor('red').map(delay(1000)),
+      changeBackgroundColor('black').map(delay(1000)),
+      commit(
+        changeColor('yellow').map(delay(1500))
+      ).chain(sendMessage).map(uppercase),
+      commit(
+        changeColor('green').map(delay(2000))
+      ).chain(sendMessage).map(uppercase),
+      commit(
+        changeColor('pink').map(delay(2500))
+      ).chain(sendMessage).map(uppercase),
+      changeBackgroundColor('purple').map(delay(3000)),
+      sendMessage(';)').map(delay(3500))
+    ]
+  )(
+    // The state props is coming from RunContext.
+    ({ state }) => h('div', {},
+      h('h1', { className: 'container', style: { color: state.color, backgroundColor: state.backgroundColor } },
+        [state.message]
+      )
+    )
+  )
+  // Reducer for our RunContext's local component state. (no redux!)
+  const stateReducer = (state, action) => {
+    switch (action.type) {
+      case 'MESSAGE':
+        return { message: action.payload }
+      case 'COLOR':
+        return { color: action.payload }
+      case 'BACKGROUND_COLOR':
+        return { backgroundColor: action.payload }
+      default:
+        return (state || { backgroundColor: 'white', color: 'black' })
+    }
+  }
+  ReactDOM.render(
+    h(ReactTransact.RunContext, { stateReducer, onResolved: (results) => console.log('Results', results) },
+      h(Container)
+    ),
+    document.getElementById('app')
+  )
+</script>
+</body>
+</html>

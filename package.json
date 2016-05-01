@@ -8,7 +8,7 @@
   },
   "main": "index.js",
   "files": [
-    "dist",
+    "umd",
     "lib",
     "index.js",
     "router.js",

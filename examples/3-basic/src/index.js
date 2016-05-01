@@ -83,11 +83,11 @@ class Messenger extends Component {
   }
 }
 
-const Container = ({ message, hasError }) => {
+const Container = ({ state }) => {
   return (
     <div className="container">
-      <div className={hasError ? 'error' : ''}>
-        <p className="message"><em>{message}</em></p>
+      <div className={state.hasError ? 'error' : ''}>
+        <p className="message"><em>{state.message}</em></p>
         <Messenger/>
       </div>
     </div>
