@@ -1,6 +1,6 @@
 import { IStore, IAction } from './interfaces'
 
-const INIT = { type: '@@INIT' }
+export const INIT = { type: '@@INIT' }
 
 /*
  * The `ComponentStateStore` can be used in place of redux store. When actions

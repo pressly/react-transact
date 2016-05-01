@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { IMapTasks, IStore, IResolveOptions, ITask } from './../interfaces'
 import TaskQueue from '../TaskQueue'
-import ComponentStateStore from '../ComponentStateStore'
+import ComponentStateStore, { INIT } from '../ComponentStateStore'
 
 const defaultResolveOpts = {
   immediate: false
@@ -9,10 +9,10 @@ const defaultResolveOpts = {
 
 const { func, object, shape } = React.PropTypes
 
-export default class RunContext extends React.Component<any,void> {
+export default class RunContext extends React.Component<any,any> {
   static displayName = 'RunContext'
   static contextTypes = {
-    store: object.isRequired
+    store: object
   }
   static childContextTypes = {
     transact: shape({
@@ -36,8 +36,14 @@ export default class RunContext extends React.Component<any,void> {
     super(props, context)
     if (typeof props.stateReducer === 'undefined') {
       this.store = context.store || props.store
+      this.state = {}
     } else {
-      this.store = ComponentStateStore(props.stateReducer, () => this.state, this.setState)
+      this.state = props.stateReducer(undefined, INIT)
+      this.store = ComponentStateStore(
+        props.stateReducer,
+        () => this.state,
+        this.setState.bind(this)
+      )
     }
     this.queue = new TaskQueue()
   }
@@ -89,6 +95,6 @@ export default class RunContext extends React.Component<any,void> {
   render() {
     const { children } = this.props
     const onlyChild = React.Children.only(children)
-    return React.cloneElement(onlyChild)
+    return React.cloneElement(onlyChild, this.state)
   }
 }

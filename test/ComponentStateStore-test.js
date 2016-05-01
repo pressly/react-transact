@@ -18,21 +18,16 @@ test('ComponentStateStore', (t) => {
     setState
   )
 
-  setTimeout(() => {
+  store.dispatch({ type: 'MESSAGE', payload: 'Hello' })
+  t.deepEqual(state, { message: 'Hello' }, 'dispatch updates state')
 
-    t.deepEqual(store.getState(), { message: '?' }, 'sets initial state')
+  t.equal(store.getState(), state, 'returns store state')
 
-    store.dispatch({ type: 'MESSAGE', payload: 'Hello' })
-    t.deepEqual(state, { message: 'Hello' }, 'dispatch updates state')
+  store.replaceReducer((state) => {
+    return state
+  })
+  store.dispatch({ type: 'MESSAGE', payload: 'Bye' })
+  t.deepEqual(state, { message: 'Hello' }, 'replaces reducer')
 
-    t.equal(store.getState(), state, 'returns store state')
-
-    store.replaceReducer((state) => {
-      return state
-    })
-    store.dispatch({ type: 'MESSAGE', payload: 'Bye' })
-    t.deepEqual(state, { message: 'Hello' }, 'replaces reducer')
-
-    t.end()
-  }, 0)
+  t.end()
 })
