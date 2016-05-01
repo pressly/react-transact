@@ -22,15 +22,15 @@ const setMessage = taskCreator(
 class Messenger extends Component {
   render() {
     return (
-      <div>
-        <p>
-          Change message to:
-        </p>
+      <div className="messenger">
         <form onSubmit={(evt) => {
           evt.preventDefault()
           this.props.transact.run(setMessage(this.refs.input.value))
         }}>
-          <input ref="input"/>
+          <label>
+            Write something else:
+            <input autoFocus={true} ref="input"/>
+          </label>
           <button>Go</button>
         </form>
       </div>
@@ -40,9 +40,11 @@ class Messenger extends Component {
 
 const Container = ({ message }) => {
   return (
-    <div>
-      <p>Current message: {message}</p>
-      <Messenger/>
+    <div className="container">
+      <div>
+        <p className="message">Current message: <em>{message}</em></p>
+        <Messenger/>
+      </div>
     </div>
   )
 }

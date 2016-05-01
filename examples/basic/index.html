@@ -16,15 +16,27 @@
       box-sizing: border-box;
     }
 
-    a {
-      color: #003366;
-      text-decoration: none;
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      width: 100vw;
+      text-align: center;
     }
-    a:hover, a.active {
-      color: #0074D9;
+
+    .message {
+      font-size: 2.4rem;
     }
-    a:hover {
-      text-decoration: underline;
+
+    input, button {
+      font-size: 1.6rem;
+      outline: none;
+      margin-left: 0.3em;
+    }
+
+    .messenger {
+      font-size: 1.6rem;
     }
   </style>
   <body>

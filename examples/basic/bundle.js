@@ -1734,7 +1734,7 @@ var RunContext = function (_React$Component) {
 
 RunContext.displayName = 'RunContext';
 RunContext.contextTypes = {
-    store: object.isRequired
+    store: object
 };
 RunContext.childContextTypes = {
     transact: shape({
@@ -20009,19 +20009,19 @@ var Messenger = (_dec = (0, _reactTransact.transact)(function (state, props, com
 
       return _react2.default.createElement(
         'div',
-        null,
-        _react2.default.createElement(
-          'p',
-          null,
-          'Change message to:'
-        ),
+        { className: 'messenger' },
         _react2.default.createElement(
           'form',
           { onSubmit: function onSubmit(evt) {
               evt.preventDefault();
               _this2.props.transact.run(setMessage(_this2.refs.input.value));
             } },
-          _react2.default.createElement('input', { ref: 'input' }),
+          _react2.default.createElement(
+            'label',
+            null,
+            'Write something else:',
+            _react2.default.createElement('input', { autoFocus: true, ref: 'input' })
+          ),
           _react2.default.createElement(
             'button',
             null,
@@ -20041,14 +20041,22 @@ var Container = function Container(_ref) {
 
   return _react2.default.createElement(
     'div',
-    null,
+    { className: 'container' },
     _react2.default.createElement(
-      'p',
+      'div',
       null,
-      'Current message: ',
-      message
-    ),
-    _react2.default.createElement(Messenger, null)
+      _react2.default.createElement(
+        'p',
+        { className: 'message' },
+        'Current message: ',
+        _react2.default.createElement(
+          'em',
+          null,
+          message
+        )
+      ),
+      _react2.default.createElement(Messenger, null)
+    )
   );
 };
 
