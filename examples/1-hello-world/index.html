@@ -21,7 +21,7 @@ This is an example of printing "Hello World!" on the screen using react-transact
   const HelloWorld = ReactTransact.transact(
     () => [ sendMessage('Hello World!') ]
   )(
-    // The state props is coming from RunContext.
+    // The state prop is coming from RunContext.
     ({ state }) => h('h1', {}, [state.message])
   )
   // Reducer for our RunContext's local component state. (no redux!)
