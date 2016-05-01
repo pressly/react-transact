@@ -31,12 +31,7 @@ const stateReducer = (state, action) => {
 // Render the application with state reducer and starting props.
 ReactDOM.render(
   h(RunContext, { stateReducer },
-    h(Container, {
-      // Try changing these values.
-      from: 10,
-      to: 0,
-      delay: 1
-    })
+    h(Container)
   ),
   document.getElementById('app')
 )
