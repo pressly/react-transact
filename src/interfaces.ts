@@ -37,6 +37,7 @@ export type MapperWithProps = {
 export interface IStore {
   dispatch: (action: IAction<any>) => void
   getState: () => any
+  subscribe: (listener: () => void) => () => void
   replaceReducer: ((any, IAction) => void)
 }
 

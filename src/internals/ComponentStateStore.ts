@@ -18,6 +18,9 @@ const ComponentStateStore = (reducer: (any, IAction)=>any, getState: ()=>any, se
       setState(r(getState(), action))
     },
     getState,
+    subscribe: () => {
+      return () => {}
+    },
     replaceReducer: (reducer: (any, IAction)=>any): void => { r = reducer }
   }
 }

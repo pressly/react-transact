@@ -1,17 +1,17 @@
 const test = require('tape')
-const middleware = require('../lib/middleware').default
+const install = require('../../lib/install').default
 const applyMiddleware = require('redux').applyMiddleware
-const actions = require('../lib/actions')
-const Task = require('../lib/internals/Task').default
+const actions = require('../../lib/actions')
+const Task = require('../../lib/internals/Task').default
 const createStore = require('redux').createStore
 const sinon = require('sinon')
 
-test('middleware (no tasks)', (t) => {
+test('install middleware (no tasks)', (t) => {
   const identity = (state) => state
-  const m = middleware()
+  const m = install()
   const store = createStore(identity, {}, applyMiddleware(m))
 
-  t.ok(typeof m.done.then === 'function', 'returns a done promise on middleware')
+  t.ok(typeof m.done.then === 'function', 'returns a done promise on install')
 
   store.dispatch({ type: actions.RUN_SCHEDULED_TASKS })
 
@@ -20,12 +20,12 @@ test('middleware (no tasks)', (t) => {
   })
 })
 
-test('middleware (run one task)', (t) => {
+test('install middleware (run one task)', (t) => {
   const reducer = (state = 'called', action = {}) => {
     if (action.type === 'OK') return 'called'
     else return 'not called'
   }
-  const m = middleware()
+  const m = install()
   const store = createStore(reducer, undefined, applyMiddleware(m))
 
   store.dispatch({ type: actions.SCHEDULE_TASKS, payload: {
@@ -41,12 +41,12 @@ test('middleware (run one task)', (t) => {
   })
 })
 
-test('middleware (multiple tasks)', (t) => {
+test('install middleware (multiple tasks)', (t) => {
   const reducer = (state = [], action = {}) => {
     if (action.type === 'OK') return state.concat([action])
     else return state
   }
-  const m = middleware()
+  const m = install()
   const store = createStore(reducer, undefined, applyMiddleware(m))
 
   // This should resolve after all tasks are finished.

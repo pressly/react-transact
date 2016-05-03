@@ -2,8 +2,8 @@ import {IStore, IAction} from "./interfaces";
 import {RUN_SCHEDULED_TASKS, SCHEDULE_TASKS} from './actions'
 import TaskQueue from './internals/TaskQueue';
 
-const makeMiddleware = (queue: TaskQueue) => {
-  queue = queue || new TaskQueue()
+const makeMiddleware = (components: any[]) => {
+  const queue = new TaskQueue()
 
   let _res: Function = () => {}
   const done = new Promise((res) => {

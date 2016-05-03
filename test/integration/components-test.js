@@ -1,15 +1,17 @@
-require('./setup')
+require('./../setup')
 const mount = require('enzyme').mount
+const applyMiddleware = require('redux').applyMiddleware
 const createStore = require('redux').createStore
 const connect = require('react-redux').connect
 const Provider = require('react-redux').Provider
 const React = require('react')
 const test = require('tape')
 const sinon = require('sinon')
-const RunContext = require('../lib/components/RunContext').default
-const transact = require('../lib/components/transact').default
-const Task = require('../lib/internals/Task').default
-const taskCreator = require('../lib/internals/taskCreator').default
+const RunContext = require('../../lib/components/RunContext').default
+const transact = require('../../lib/components/transact').default
+const Task = require('../../lib/internals/Task').default
+const taskCreator = require('../../lib/internals/taskCreator').default
+const middleware = require('../../lib/middleware').default
 
 const h = React.createElement
 
@@ -94,11 +96,12 @@ test('transact decorator (run on mount)', (t) => {
  * This test covers all of the basic usages of @transact decorator. It is pretty long,
  * but is more of a journey test than integration. :)
  */
-test.skip('RunContext with transact decorator (journey)', (t) => {
+test('RunContext with transact decorator', (t) => {
+  const m = middleware()
   const store = makeStore({
+    history: [],
     message: ''
-  })
-  const dispatchSpy = sinon.spy(store, 'dispatch')
+  }, m)
   const Message = ({ message }) => h('p', {}, [ message ])
 
   const Wrapped = transact(
@@ -126,9 +129,7 @@ test.skip('RunContext with transact decorator (journey)', (t) => {
     // Then the resulting action from here will commit as well.
     .map(x => `${x}!`)
   ], { onMount: true })(
-    connect((state) => ({ message: state.message }))(
-      Message
-    )
+    () => null
   )
 
   class Root extends React.Component {
@@ -136,51 +137,13 @@ test.skip('RunContext with transact decorator (journey)', (t) => {
       super(props)
       this.state = { showSecondWrappedElement: false }
     }
+    componentDidMount() {
+      this.setState({ showSecondWrappedElement: true })
+    }
     render() {
       return (
         h(Provider, { store },
-          h(RunContext, {
-              onResolve: (results) => {
-                if (!this.state.showSecondWrappedElement) {
-                  // This is the first time onResolve is called, which should only dispatch
-                  // the Wrapped component.
-                  t.equal(results.length, 2, 'resolves with results of tasks')
-                  t.equal(wrapper.text(), 'Hello Error!', 'updates state after task completion')
-
-                  t.equal(dispatchSpy.callCount, 2)
-
-                  t.deepEqual(dispatchSpy.firstCall.args[0], {
-                    type: MESSAGE,
-                    payload: 'Hello Alice!'
-                  }, 'dispatches first action')
-
-                  t.deepEqual(dispatchSpy.secondCall.args[0], {
-                    type: ERROR,
-                    payload: 'Boo-urns'
-                  }, 'dispatches second action')
-
-                  // Now show the second `onMount: true` element
-                  this.setState({ showSecondWrappedElement: true })
-                } else {
-                  // This is the second time the onResolve is called, which is caused by
-                  // the WrappedRunOnMount being mounted with `transact(..., { onMount: true })`.
-
-                  t.equal(dispatchSpy.callCount, 4) // There was a commit in the middle of the chain.
-
-                  t.deepEqual(dispatchSpy.thirdCall.args[0], {
-                    type: MESSAGE,
-                    payload: 'Bye Alice'
-                  }, 'intermediary action committed')
-
-                  t.deepEqual(dispatchSpy.getCall(3).args[0], {
-                    type: MESSAGE,
-                    payload: 'Bye Alice!'
-                  }, 'last action in the chain is also committed')
-
-                  t.end()
-                }
-              }
-            },
+          h(RunContext, {},
             h('div', {}, [
               h(Wrapped),
               this.state.showSecondWrappedElement ? h(WrappedRunOnMount) : null
@@ -193,7 +156,20 @@ test.skip('RunContext with transact decorator (journey)', (t) => {
 
   const element = h(Root)
 
-  const wrapper = mount(element)
+  const wrapped = mount(element)
+
+  m.done.then(() => {
+    t.deepEqual(store.getState().history, [
+      { type: MESSAGE, payload: 'Hello Alice!' },
+      { type: MESSAGE, payload: 'Bye Alice' },
+      { type: MESSAGE, payload: 'Bye Alice!' },
+      { type: ERROR, payload: 'Boo-urns' }
+    ], 'actions are dispatched in order')
+
+    t.equal(wrapped.text(), 'Hello Error!', 'text shows results of last dispatched action')
+
+    t.end()
+  })
 })
 
 const MESSAGE = 'MESSAGE'
@@ -203,13 +179,13 @@ const Greeter = ({ name }) => h('p', {
   className: 'message'
 }, [`Hello ${name}!`])
 
-const makeStore = (initialState = {}) => createStore((state = {}, action) => {
+const makeStore = (initialState = {}, m) => createStore((state = {}, action) => {
   switch (action.type) {
     case MESSAGE:
-      return { message: action.payload }
+      return { message: action.payload, history: state.history.concat([action]) }
     case ERROR:
-      return { message: 'Hello Error!', prev: state.message }
+      return { message: 'Hello Error!', history: state.history.concat([action]) }
     default:
       return state
   }
-}, initialState)
+}, initialState, applyMiddleware(m))

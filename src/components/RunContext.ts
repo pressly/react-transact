@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { MapperWithProps, IStore, IResolveOptions, ITask } from './../interfaces'
-import TaskQueue from '../internals/TaskQueue'
+import { MapperWithProps, IStore, IResolveOptions, ITask } from '../interfaces'
 import ComponentStateStore, { INIT } from '../internals/ComponentStateStore'
+import {SCHEDULE_TASKS, RUN_SCHEDULED_TASKS} from '../actions'
 
 const defaultResolveOpts = {
   immediate: false
@@ -21,19 +21,15 @@ export default class RunContext extends React.Component<any,any> {
     })
   }
   static propsTypes = {
-    onResolve: func,
     stateReducer: func
-  }
-  static defaultProps = {
-    onResolve: () => {}
   }
 
   context: any
   store: IStore
-  queue: TaskQueue
 
   constructor(props, context) {
     super(props, context)
+
     if (typeof props.stateReducer === 'undefined') {
       this.store = context.store || props.store
       this.state = {}
@@ -45,8 +41,8 @@ export default class RunContext extends React.Component<any,any> {
         this.setState.bind(this)
       )
     }
-    this.queue = new TaskQueue()
-    setTimeout(() => this.runTasks(this.props), 0)
+
+    setTimeout(() => this.runTasks(), 0)
   }
 
   getChildContext() {
@@ -58,34 +54,29 @@ export default class RunContext extends React.Component<any,any> {
     }
   }
 
+  componentWillReceiveProps() {
+    setTimeout(() => this.runTasks(), 0)
+  }
+
   resolve(mapTaskRuns: MapperWithProps, opts: IResolveOptions = defaultResolveOpts): void {
-    this.queue.push(mapTaskRuns)
+    this.store.dispatch({
+      type: SCHEDULE_TASKS, payload: mapTaskRuns
+    })
     if (opts.immediate) {
-      this.runTasks(this.props)
+      this.runTasks()
     }
   }
 
   run(tasks: Array<ITask<any,any>> | ITask<any,any>, props: any): void {
-    this.queue.push({ mapper: () => tasks, props })
-    this.runTasks(this.props)
-  }
-
-  runTasks(props): void {
-    this.queue.run(
-      this.store.dispatch,
-      this.store.getState()
-    ).then((failedTasks) => {
-      props.onResolve(failedTasks)
+    this.store.dispatch({
+      type: SCHEDULE_TASKS,
+      payload: { mapper: () => tasks, props }
     })
+    this.runTasks()
   }
 
-  componentWillReceiveProps(nextProps) {
-    setTimeout(() => {
-      // Only call run if there are tasks to run, otherwise `onResolve` will trigger unnecessarily.
-      if (this.queue.size > 0) {
-        this.runTasks(nextProps)
-      }
-    }, 0)
+  runTasks(): void {
+    this.store.dispatch({ type: RUN_SCHEDULED_TASKS })
   }
 
   render() {

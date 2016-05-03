@@ -2,10 +2,10 @@ const React = require('react')
 const mount = require('enzyme').mount
 const test = require('tape')
 const sinon = require('sinon')
-const h = require('../../lib/internals/helpers')
-const RunContext = require('../../lib/components/RunContext').default
-const transact = require('../../lib/components/transact').default
-const Task = require('../../lib/internals/Task').default
+const h = require('../../../lib/internals/helpers')
+const RunContext = require('../../../lib/components/RunContext').default
+const transact = require('../../../lib/components/transact').default
+const Task = require('../../../lib/internals/Task').default
 
 const element = React.createElement
 
