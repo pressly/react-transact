@@ -21,7 +21,7 @@
     "compile:ts": "tsc",
     "compile:es6": "webpack -p lib/index.js umd/ReactTransact.js",
     "test": "npm run compile:ts && tape 'test/**/*.js'",
-    "test:watch": "concurrently 'tsc -w' 'nodemon --delay 1000ms --exec tape \"test/**/*.js\"'"
+    "test:watch": "concurrently 'tsc -w' 'nodemon --delay 2000ms --exec tape \"test/**/*.js\"'"
   },
   "author": {
     "name": "Jack Hsu",

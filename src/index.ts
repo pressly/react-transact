@@ -3,13 +3,15 @@ import transact from './components/transact'
 import taskCreator from './internals/taskCreator'
 import RunContext from './components/RunContext'
 import RouterRunContext from './components/RouterRunContext'
+import middleware from './middleware'
 
 export {
   transact,
   taskCreator,
   Task,
   RunContext,
-  RouterRunContext
+  RouterRunContext,
+  middleware as transactMiddleware
 }
 
 export default {
@@ -17,5 +19,6 @@ export default {
   taskCreator,
   Task,
   RunContext,
-  RouterRunContext
+  RouterRunContext,
+  transactMiddleware: middleware
 }

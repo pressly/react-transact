@@ -3,8 +3,8 @@ import React from 'react'
 import ReactDOM from 'react-dom/server'
 import {Route, match} from 'react-router'
 import {Provider, connect} from 'react-redux'
-import {createStore} from 'redux'
-import {transact, Task, RouterRunContext} from '../../index'
+import {createStore, applyMiddleware} from 'redux'
+import {transact, Task, RouterRunContext, transactMiddleware} from '../../index'
 import TaskQueue from '../../lib/internals/TaskQueue'
 
 const server = express()
@@ -32,10 +32,7 @@ const routes = <Route path="/" component={App}/>
 server.listen(8080, () => {
   server.all('/', (req, res) => {
     match({ routes, location: req.url }, (err, redirect, routerProps) => {
-      const store = createStore(reducer)
-      const c = routerProps.components[0]
-      console.log(c._mapTasks)
-      console.log(c)
+      const store = createStore(reducer, {}, applyMiddleware(transactMiddleware))
 
       const documentElement = (
         <Provider store={store}>

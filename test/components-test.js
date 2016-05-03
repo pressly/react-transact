@@ -94,7 +94,7 @@ test('transact decorator (run on mount)', (t) => {
  * This test covers all of the basic usages of @transact decorator. It is pretty long,
  * but is more of a journey test than integration. :)
  */
-test('RunContext with transact decorator (journey)', (t) => {
+test.skip('RunContext with transact decorator (journey)', (t) => {
   const store = makeStore({
     message: ''
   })
