@@ -6,6 +6,7 @@ const getDisplayName = (C: any): string => C.displayName || C.name || 'Component
 type ITransact = {
   resolve: (mapper: MapperWithProps, opts: IResolveOptions) => void
   run: (mapper: MapperWithProps, props: any) => void
+  store: any
 }
 
 type IProps = {
@@ -43,7 +44,9 @@ export default (mapTasks: IMapTasks, opts: IDecoratorOptions = defaultOpts): Fun
       render() {
         return React.createElement(
           Wrappee,
-          Object.assign({}, this.props, { transact: this.transact })
+          Object.assign({}, this.props, {
+            transact: this.transact
+          })
         )
       }
     }

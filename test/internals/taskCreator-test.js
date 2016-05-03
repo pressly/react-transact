@@ -1,8 +1,8 @@
 'use strict'
 
 const test = require('tape')
-const Task = require('../lib/internals/Task').default
-const taskCreator = require('../lib/internals/taskCreator').default
+const Task = require('../../lib/internals/Task').default
+const taskCreator = require('../../lib/internals/taskCreator').default
 
 test('taskCreator (sync)', (t) => {
   t.plan(3)

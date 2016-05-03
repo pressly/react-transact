@@ -1,34 +1,50 @@
-const express = require('express')
-const React = require('react')
-const ReactDOM = require('react-dom/server')
-const ReactTransact = require('../../index')
-const { transact, Task, RunContext } = ReactTransact
-const h = React.createElement
+import express from 'express'
+import React from 'react'
+import ReactDOM from 'react-dom/server'
+import {Route, match} from 'react-router'
+import {Provider, connect} from 'react-redux'
+import {createStore} from 'redux'
+import {transact, Task, RouterRunContext} from '../../index'
+import TaskQueue from '../../lib/internals/TaskQueue'
 
 const server = express()
 
-const App = transact(
-  () => Task.resolve({ type: 'HELLO' })
-)(
-  ({ state }) => {
-    return h('h1', {}, state.message)
-  }
-)
-
-const stateReducer = (state , action) => {
+const reducer = (state , action) => {
   if (action.type === 'HELLO') return { message: 'Hello World!' }
   else return state || { message: 'Test' }
 }
 
+@transact(
+  (state, props) => {
+    return [Task.resolve({ type: 'HELLO' })]
+  }
+)
+@connect(state => ({message: state.message}))
+class App extends React.Component {
+  render() {
+    const { message } = this.props
+    return <h1>{message}</h1>
+  }
+}
+
+const routes = <Route path="/" component={App}/>
+
 server.listen(8080, () => {
   server.all('/', (req, res) => {
-    const documentElement = h(RunContext, {
-      stateReducer,
-      onResolve: () => {
-        const markup = ReactDOM.renderToStaticMarkup(documentElement)
-        res.send(`<!doctype html>\n${markup}`)
-      }
-    }, h(App))
-    const markup = ReactDOM.renderToStaticMarkup(documentElement)
+    match({ routes, location: req.url }, (err, redirect, routerProps) => {
+      const store = createStore(reducer)
+      const c = routerProps.components[0]
+      console.log(c._mapTasks)
+      console.log(c)
+
+      const documentElement = (
+        <Provider store={store}>
+          <RouterRunContext {...routerProps}/>
+        </Provider>
+      )
+
+      const markup = ReactDOM.renderToStaticMarkup(documentElement)
+      res.send(`<!doctype html>\n${markup}`)
+    })
   })
 })
