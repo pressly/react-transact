@@ -8,19 +8,16 @@ const h = React.createElement
 const server = express()
 
 const App = transact(
-  () => Task.resolve({ type: 'HELLO' }),
-  { onMount: true }
+  () => Task.resolve({ type: 'HELLO' })
 )(
   ({ state }) => {
-    const e = h('h1', {}, state.message)
-    console.log(e)
-    return e;
+    return h('h1', {}, state.message)
   }
 )
 
 const stateReducer = (state , action) => {
   if (action.type === 'HELLO') return { message: 'Hello World!' }
-  else return state || { message: '' }
+  else return state || { message: 'Test' }
 }
 
 server.listen(8080, () => {
@@ -28,6 +25,7 @@ server.listen(8080, () => {
     const documentElement = h(RunContext, {
       stateReducer,
       onResolve: () => {
+        const markup = ReactDOM.renderToStaticMarkup(documentElement)
         res.send(`<!doctype html>\n${markup}`)
       }
     }, h(App))

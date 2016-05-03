@@ -46,6 +46,7 @@ export default class RunContext extends React.Component<any,any> {
       )
     }
     this.queue = new TaskQueue()
+    setTimeout(() => this.runTasks(this.props), 0)
   }
 
   getChildContext() {
@@ -76,10 +77,6 @@ export default class RunContext extends React.Component<any,any> {
     ).then((failedTasks) => {
       props.onResolve(failedTasks)
     })
-  }
-
-  componentDidMount() {
-    this.runTasks(this.props)
   }
 
   componentWillReceiveProps(nextProps) {

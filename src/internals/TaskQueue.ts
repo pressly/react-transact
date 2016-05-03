@@ -33,6 +33,7 @@ class TaskQueue {
 
     // WARNING: Mutation will occur.
     let newPending
+
     if (this.size === 0) {
       newPending = Promise.resolve([])
     } else {
