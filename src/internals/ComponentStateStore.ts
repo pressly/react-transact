@@ -1,6 +1,8 @@
-import { IStore, IAction } from './../interfaces'
+import {IStore, IAction} from '../interfaces'
+import {STANDALONE_INIT} from '../actions'
+import install from '../install'
 
-export const INIT = { type: '@@INIT' }
+const middleware = install(null)
 
 /*
  * The `ComponentStateStore` can be used in place of redux store. When actions
@@ -10,12 +12,18 @@ const ComponentStateStore = (reducer: (any, IAction)=>any, getState: ()=>any, se
   let r = reducer
 
   setTimeout(() => {
-    setState(r(undefined, INIT))
+    r(undefined, STANDALONE_INIT)
   }, 0)
 
-  return {
+  const dispatch = (action: IAction<any>) => {
+    setState(r(getState(), action))
+  }
+
+  const store = {
     dispatch: (action: IAction<any>) => {
-      setState(r(getState(), action))
+      middleware(store)((action) => {
+        dispatch(action)
+      })(action)
     },
     getState,
     subscribe: () => {
@@ -23,6 +31,9 @@ const ComponentStateStore = (reducer: (any, IAction)=>any, getState: ()=>any, se
     },
     replaceReducer: (reducer: (any, IAction)=>any): void => { r = reducer }
   }
+
+
+  return store
 }
 
 export default ComponentStateStore

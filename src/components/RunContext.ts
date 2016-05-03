@@ -1,13 +1,13 @@
 import * as React from 'react'
 import { MapperWithProps, IStore, IResolveOptions, ITask } from '../interfaces'
-import ComponentStateStore, { INIT } from '../internals/ComponentStateStore'
-import {SCHEDULE_TASKS, RUN_SCHEDULED_TASKS} from '../actions'
+import ComponentStateStore from '../internals/ComponentStateStore'
+import {SCHEDULE_TASKS, RUN_SCHEDULED_TASKS, STANDALONE_INIT} from '../actions'
 
 const defaultResolveOpts = {
   immediate: false
 }
 
-const { func, object, shape } = React.PropTypes
+const { any, func, object, shape } = React.PropTypes
 
 export default class RunContext extends React.Component<any,any> {
   static displayName = 'RunContext'
@@ -16,6 +16,7 @@ export default class RunContext extends React.Component<any,any> {
   }
   static childContextTypes = {
     transact: shape({
+      store: any,
       resolve: func,
       run: func
     })
@@ -30,15 +31,19 @@ export default class RunContext extends React.Component<any,any> {
   constructor(props, context) {
     super(props, context)
 
+    // Using store from redux
     if (typeof props.stateReducer === 'undefined') {
       this.store = context.store || props.store
       this.state = {}
+    // Using a standalone store
     } else {
-      this.state = props.stateReducer(undefined, INIT)
+      this.state = props.stateReducer(undefined, STANDALONE_INIT)
       this.store = ComponentStateStore(
         props.stateReducer,
         () => this.state,
-        this.setState.bind(this)
+        (state) => {
+          setTimeout(() => this.setState(state), 0)
+        }
       )
     }
 
@@ -48,6 +53,7 @@ export default class RunContext extends React.Component<any,any> {
   getChildContext() {
     return {
       transact: {
+        store: this.store,
         resolve: this.resolve.bind(this),
         run: this.run.bind(this)
       }
