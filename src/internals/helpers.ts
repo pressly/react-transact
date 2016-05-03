@@ -38,7 +38,6 @@ export const flattenComponents = (components: any[]): any[] => {
 }
 
 export const getTaskMappers = (components: any[]): Function[] => {
-  return flattenComponents(components)
-    .map(c => c.type._mapTasks)
-    .filter(m => typeof m !== 'undefined')
+  const flattened = flattenComponents(components)
+  return flattened.map(c => c._mapTasks).filter(m => typeof m !== 'undefined')
 }

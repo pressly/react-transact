@@ -11,7 +11,7 @@ const RunContext = require('../../lib/components/RunContext').default
 const transact = require('../../lib/components/transact').default
 const Task = require('../../lib/internals/Task').default
 const taskCreator = require('../../lib/internals/taskCreator').default
-const middleware = require('../../lib/middleware').default
+const install = require('../../lib/install').default
 
 const h = React.createElement
 
@@ -97,7 +97,7 @@ test('transact decorator (run on mount)', (t) => {
  * but is more of a journey test than integration. :)
  */
 test('RunContext with transact decorator', (t) => {
-  const m = middleware()
+  const m = install()
   const store = makeStore({
     history: [],
     message: ''

@@ -126,8 +126,8 @@ test('install middleware (with routes)', (t) => {
 
   const routeComponent =
     h('div', { children: [
-      h(WrappedA),
-      h(WrappedB)
+      WrappedA,
+      WrappedB
     ]})
 
   const m = install({ components: [routeComponent] })

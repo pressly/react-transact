@@ -19,6 +19,7 @@ const makeMiddleware = (routerProps: IRouterProps) => {
   const middleware: any = (store: IStore) => {
     if (routerProps) {
       const mappers = getTaskMappers(routerProps.components)
+
       // After store is created, run initial tasks, if any.
       setTimeout(() => {
         mappers.forEach((mapper: IMapTasks) => {
