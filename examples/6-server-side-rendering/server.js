@@ -14,7 +14,7 @@ const reducer = (state , action) => {
 }
 
 @transact(
-  (state, props) => {
+  () => {
     return [Task.resolve({ type: 'HELLO' })]
   }
 )
@@ -31,8 +31,8 @@ const routes = <Route path="/" component={App}/>
 server.listen(8080, () => {
   server.all('/', (req, res) => {
     match({ routes, location: req.url }, (err, redirect, routerProps) => {
-      const m = install(routerProps)
-      const store = createStore(reducer, {}, applyMiddleware(m))
+      const installed = install(routerProps)
+      const store = createStore(reducer, {}, applyMiddleware(installed))
 
       const documentElement = (
         <Provider store={store}>
@@ -40,7 +40,7 @@ server.listen(8080, () => {
         </Provider>
       )
 
-      m.done.then(() => {
+      installed.done.then(() => {
         const markup = ReactDOM.renderToStaticMarkup(documentElement)
         res.send(`<!doctype html>\n${markup}`)
       })

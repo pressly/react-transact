@@ -15,3 +15,30 @@ export const applyValueOrPromise = <T>(fn: (T) => any, x: T | Promise<T>): void 
     fn(x)
   }
 }
+
+export const flattenComponents = (components: any[]): any[] => {
+  return recur(components, [])
+
+  function recur(components: any[], acc: any[]): any[] {
+    if (components.length === 0) {
+      return acc
+    } else {
+      return recur(
+        components.reduce((cs, c) => {
+          if (c.props && c.props.children && c.props.children.length > 0) {
+            return cs.concat(c.props.children)
+          } else {
+            return cs
+          }
+        }, []),
+        acc.concat(components)
+      )
+    }
+  }
+}
+
+export const getTaskMappers = (components: any[]): Function[] => {
+  return flattenComponents(components)
+    .map(c => c.type._mapTasks)
+    .filter(m => typeof m !== 'undefined')
+}
