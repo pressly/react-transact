@@ -1,12 +1,15 @@
 # React Transact
 
-Simple, effortless way to fetch data and make them available to React components.
+Simple, effortless way to fetch async data or perform async computations, and make 
+the results available to React components.
 
 Works with Redux and React-Router out of the box. Also supports server-side
 rendering!
 
 This project draws a lot of inspiration from the [`data.task`](https://github.com/folktale/data.task)
 library of [Folktale](http://folktalejs.org/). I highly recommend you check Folktale out!
+
+For a quick in-browser example, check out the [Counter app](http://embed.plnkr.co/OLH7WaNguDDake7yB6aQ/).
 
 ## Goals
 
