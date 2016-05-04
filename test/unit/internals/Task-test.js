@@ -133,6 +133,20 @@ test('Task#orElse', (t) => {
 
 })
 
+test('Task#cancel', (t) => {
+  const spy = sinon.spy()
+  const task = new Task((rej, res) => {
+    res({ type: 'RESOLVED' })
+  })
+
+  task.cancel()
+  task.fork(spy)
+
+  t.ok(!spy.called, 'task should be cancelled')
+
+  t.end()
+})
+
 test('Task.empty', (t) => {
   const task = Task.empty()
   task.fork(() => {

@@ -119,6 +119,10 @@ class Task<A,B> implements ITask<A,B> {
       )
     })
   }
+
+  cancel(): void {
+    this.computation = () => {}
+  }
 }
 
 export default Task

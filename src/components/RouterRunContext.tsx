@@ -42,6 +42,7 @@ export default class RouterRunContext extends React.Component<IProps,void> {
     store: any,
     stateReducer: any
   }
+  runContext: RunContext
   _location: ILocation
   constructor(props) {
     super(props)
@@ -52,7 +53,7 @@ export default class RouterRunContext extends React.Component<IProps,void> {
   }
   componentDidUpdate() {
     if (locationChanged(this._location, this.props.location)) {
-      const ctx = this.refs[RUN_CONTEXT] as RunContext
+      const ctx = this.runContext
       this.props.components
         .map(c => c._mapTasks)
         .filter(f => typeof f === 'function')
@@ -66,7 +67,9 @@ export default class RouterRunContext extends React.Component<IProps,void> {
     props.render = undefined
     return (
       <RunContext
-        ref={RUN_CONTEXT}
+        ref={(ref: RunContext) => {
+          this.runContext = ref
+        }}
         store={this.context.store || props.store}
         stateReducer={this.context.stateReducer || props.stateReducer}
         onResolve={props.onResolve}
