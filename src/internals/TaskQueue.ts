@@ -34,7 +34,7 @@ class TaskQueue {
   run(thunk: IActionThunk<any>, state: any): Promise<ITaskResult[]> {
     // If a component applies transformations using `.chain` but need to commit one of the intermediary
     // actions to the system, then this commit function can be used.
-    const commit = Task.tap(thunk)
+    const commit = Task.tap(thunk as Function)
 
     // WARNING: Mutation will occur.
     let newPending
