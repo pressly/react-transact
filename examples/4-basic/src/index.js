@@ -83,7 +83,8 @@ class Messenger extends Component {
   }
 }
 
-const Container = ({ state }) => {
+const Container = transact()(({ transact }) => {
+  const state = transact.store.getState()
   return (
     <div className="container">
       <div className={state.hasError ? 'error' : ''}>
@@ -92,7 +93,7 @@ const Container = ({ state }) => {
       </div>
     </div>
   )
-}
+})
 
 ReactDOM.render(
   <RunContext stateReducer={reducer}>

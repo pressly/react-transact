@@ -11,13 +11,16 @@ const dec = Task.resolve({ type: 'DECREMENT' })
 // Create a HOC with transact.
 const Container = transact()(
   // The state and transact props are coming from RunContext.
-  ({ state, transact }) => h('div', {},
-    h('div', { className: 'container', children: [
-      h('button', { onClick: () => transact.run(dec) }, ['-']),
-      h('p', {}, [state.counter]),
-      h('button', { onClick: () => transact.run(inc) }, ['+'])
-    ]})
-  )
+  ({ transact }) => {
+    const state = transact.store.getState()
+    return h('div', {},
+      h('div', { className: 'container', children: [
+        h('button', { onClick: () => transact.run(dec) }, ['-']),
+        h('p', {}, [state.counter]),
+        h('button', { onClick: () => transact.run(inc) }, ['+'])
+      ]})
+    )
+  }
 )
 
 const stateReducer = (state, action) => {

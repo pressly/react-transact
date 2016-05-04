@@ -56,7 +56,7 @@ export default class RouterRunContext extends React.Component<IProps,void> {
       this.props.components
         .map(c => c._mapTasks)
         .filter(f => typeof f === 'function')
-        .forEach((mapper) => ctx.resolve(mapper, { immediate: true }))
+        .forEach((mapper) => ctx.resolve({ mapper, props: this.props }, { immediate: true }))
     }
     this._location = this.props.location
   }

@@ -22,6 +22,9 @@ class TaskQueue {
   }
 
   push(a: MapperWithProps) {
+    if (typeof a.mapper !== 'function') {
+      throw new Error('Invalid mapper passed into TaskQueue#push')
+    }
     this.queue.push(a)
   }
 
