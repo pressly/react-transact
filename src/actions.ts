@@ -1,4 +1,4 @@
-export const SCHEDULE_TASKS = '@@SCHEDULE_TASKS'
-export const RUN_SCHEDULED_TASKS = '@@RUN_SCHEDULED_TASKS'
-export const TASKS_RESOLVED = '@@TASKS_RESOLVED'
-export const STANDALONE_INIT = '@@STANDALONE_INIT'
+export const SCHEDULE_TASKS = '@@transact/SCHEDULE_TASKS'
+export const RUN_SCHEDULED_TASKS = '@@transact/RUN_SCHEDULED_TASKS'
+export const TASKS_RESOLVED = '@@transact/TASKS_RESOLVED'
+export const STANDALONE_INIT = '@@transact/STANDALONE_INIT'
