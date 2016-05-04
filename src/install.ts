@@ -1,5 +1,5 @@
 import {IStore, IAction, IMapTasks} from "./interfaces"
-import {RUN_SCHEDULED_TASKS, SCHEDULE_TASKS} from './actions'
+import {RUN_SCHEDULED_TASKS, SCHEDULE_TASKS, TASKS_RESOLVED} from './actions'
 import TaskQueue from './internals/TaskQueue'
 import {getTaskMappers} from './internals/helpers'
 
@@ -43,6 +43,8 @@ const makeMiddleware = (routerProps: IRouterProps) => {
               if (pendingCount === 0) {
                 _res(results)
               }
+              // Notify interested reducers about tasks resolved.
+              store.dispatch({ type: TASKS_RESOLVED, payload: results })
             })
           return
         default:

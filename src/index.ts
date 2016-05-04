@@ -4,8 +4,12 @@ import taskCreator from './internals/taskCreator'
 import RunContext from './components/RunContext'
 import RouterRunContext from './components/RouterRunContext'
 import install from './install'
+import {RUN_SCHEDULED_TASKS, SCHEDULE_TASKS, STANDALONE_INIT} from './actions'
 
 export {
+  RUN_SCHEDULED_TASKS,
+  SCHEDULE_TASKS,
+  STANDALONE_INIT,
   transact,
   taskCreator,
   Task,
@@ -15,6 +19,9 @@ export {
 }
 
 export default {
+  RUN_SCHEDULED_TASKS,
+  SCHEDULE_TASKS,
+  STANDALONE_INIT,
   transact,
   taskCreator,
   Task,

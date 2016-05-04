@@ -2,15 +2,12 @@ const test = require('tape')
 const React = require('react')
 const install = require('../../lib/install').default
 const applyMiddleware = require('redux').applyMiddleware
-const connect = require('react-redux').connect
-const Provider = require('react-redux').Provider
 const actions = require('../../lib/actions')
 const Task = require('../../lib/internals/Task').default
 const RunContext = require('../../lib/components/RunContext').default
 const transact = require('../../lib/components/transact').default
 const createStore = require('redux').createStore
 const sinon = require('sinon')
-const mount = require('enzyme').mount
 
 test('install middleware (no tasks)', (t) => {
   const identity = (state) => state
@@ -22,14 +19,19 @@ test('install middleware (no tasks)', (t) => {
   store.dispatch({ type: actions.RUN_SCHEDULED_TASKS })
 
   m.done.then(() => {
+    t.ok(true, 'resolves done promise')
     t.end()
   })
 })
 
 test('install middleware (run one task)', (t) => {
-  const reducer = (state = 'called', action = {}) => {
+  let results = null
+  const reducer = (state = '', action = {}) => {
     if (action.type === 'OK') return 'called'
-    else return 'not called'
+    if (action.type === actions.TASKS_RESOLVED) {
+      results = action.payload
+    }
+    return state
   }
   const m = install()
   const store = createStore(reducer, undefined, applyMiddleware(m))
@@ -42,7 +44,9 @@ test('install middleware (run one task)', (t) => {
   store.dispatch({ type: actions.RUN_SCHEDULED_TASKS })
 
   m.done.then(() => {
-    t.equal(store.getState(), 'called')
+    t.equal(store.getState(), 'called', 'state is updated before done resolves')
+    t.equal(results.length, 1, 'results array is dispatched with `TASKS_RESOLVED` action')
+    t.deepEqual(results[0].action, { type: 'OK' }, 'action is in results')
     t.end()
   })
 })
