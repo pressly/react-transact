@@ -58,10 +58,10 @@ test('transact decorator (with tasks)', (t) => {
   const Wrapped = transact(mapTasks)(Empty)
 
   mount(
-    h('div', {}, [
+    h('div', { children: [
       h(Wrapped, { transact: { resolve } }),
       h(Wrapped, { transact: { resolve } })
-    ])
+    ]})
   )
 
   t.equal(resolve.callCount, 2, 'calls resolve for each @transact component')
@@ -81,9 +81,9 @@ test('transact decorator (run on mount)', (t) => {
   const Wrapped = transact(mapTasks, { onMount: true })(Empty)
 
   mount(
-    h('div', {}, [
+    h('div', { children: [
       h(Wrapped, { transact: { resolve } })
-    ])
+    ]})
   )
 
   t.equal(resolve.firstCall.args[0].mapper, mapTasks, 'calls resolve with task run mapper')
@@ -144,10 +144,10 @@ test('RunContext with transact decorator', (t) => {
       return (
         h(Provider, { store },
           h(RunContext, {},
-            h('div', {}, [
+            h('div', { children: [
               h(Wrapped),
               this.state.showSecondWrappedElement ? h(WrappedRunOnMount) : null
-            ])
+            ]})
           )
         )
       )
