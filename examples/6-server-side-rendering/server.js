@@ -20,7 +20,8 @@ const reducer = (state = { message: '' }, action) => {
 const appendText = taskCreator('ERROR', 'APPEND', (s) => s)
 const changeColor = taskCreator('ERROR', 'COLOR', (s) => s)
 const appendTextAsync = taskCreator('ERROR', 'APPEND', (s) => new Promise(res => {
-  setTimeout(() => res(s), 50)
+  // Adding artificial delay here to simulate async requests.
+  setTimeout(() => res(s), 20)
 }))
 
 /*

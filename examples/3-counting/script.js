@@ -45,7 +45,7 @@ const stateReducer = (state, action) => {
 
 // Render the application with state reducer and starting props.
 ReactDOM.render(
-  h(RunContext, { stateReducer, onResolved: (results) => console.log('Results', results) },
+  h(RunContext, { stateReducer },
     h(Container, {
       // Try changing these values.
       from: 10,
