@@ -10,7 +10,7 @@ type IRouterProps = {
 const makeMiddleware = (routerProps: IRouterProps) => {
   const queue = new TaskQueue()
 
-  let _res: Function = () => {}
+  let _res: Function = (a :any) => {}
   const done = new Promise((res) => {
     _res = res
   })
