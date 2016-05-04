@@ -59,7 +59,7 @@ import React, {Component} from 'react'
 import {RunContext, transact, taskCreator} from 'react-transact'
 
 // Creates a function that returns a Task when invoked.
-const sendMessage = ReactTransact.taskCreator(
+const sendMessage = taskCreator(
   'ERROR',      // action type for failure
   'MESSAGE',    // action type for success
   async x => x  // async function for payload resolution
