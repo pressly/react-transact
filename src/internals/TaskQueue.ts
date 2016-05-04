@@ -36,16 +36,14 @@ class TaskQueue {
     // actions to the system, then this commit function can be used.
     const commit = Task.tap(thunk as Function)
 
-    // WARNING: Mutation will occur.
-    let newPending
+    const chainPending = new Promise((res) => {
+      if (this.size === 0) {
+        res([])
+      } else {
+        // WARNING: Mutating the queue so the next run call won't run through same queued tasks.
+        const currentQueue = this.queue
+        this.queue = []
 
-    if (this.size === 0) {
-      newPending = Promise.resolve([])
-    } else {
-      // WARNING: Mutating the queue so the next run call won't run through same queued tasks.
-      const currentQueue = this.queue
-      this.queue = []
-      newPending = new Promise<any>((res) => {
         // WARNING: Watch out! These will mutate!
         let count = 0
         let results = []
@@ -63,25 +61,12 @@ class TaskQueue {
             // Bump to next tick so we give all tasks a chance to increment
             // count before being forked.
             setTimeout(() => task.fork(
-              (a: IAction<any>) => {
+              (a:IAction<any>) => {
                 count = count - 1
                 thunk(a)
 
                 results.push({
-                  task, action: a, rejected: true
-                })
-
-                // Once the last computation finishes, resolve promise.
-                if (count === 0) {
-                  res(results)
-                }
-              },
-              (b: IAction<any>) => {
-                count = count - 1
-                thunk(b)
-
-                results.push({
-                  task, action: b, rejected: false
+                  task, action: a
                 })
 
                 // Once the last computation finishes, resolve promise.
@@ -92,12 +77,13 @@ class TaskQueue {
             ), 0)
           })
         })
-      }).then((results: ITaskResult[]) => {
-        return results
-      })
-    }
+      }
+    }).then((results: ITaskResult[]) => {
+      return results
+    })
+
     // Chaining the previous pending tasks so they will resolve in order.
-    this.pending = this.pending.then(() => newPending)
+    this.pending = this.pending.then(() => chainPending)
     return this.pending
   }
 }
