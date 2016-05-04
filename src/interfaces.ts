@@ -34,6 +34,12 @@ export type MapperWithProps = {
   mapper: IMapTasks
 }
 
+export type ITaskResult = {
+  task: ITask<any,any>
+  action: IAction<any>
+  rejected: boolean
+}
+
 export interface IStore {
   dispatch: (action: IAction<any>) => void
   getState: () => any

@@ -1,16 +1,18 @@
-import { IAction, IActionThunk, ITask, IMapTasks, MapperWithProps } from './../interfaces'
+import { IAction, IActionThunk, ITask, ITaskResult, MapperWithProps } from '../interfaces'
 import { compact } from './helpers'
 import Task from './Task'
 
-type IResult = {
-  task: ITask<any,any>
-  action: IAction<any>,
-  rejected: boolean
-}
-
+/*
+ * The `TaskQueue` is responsible for queueing and resolving tasks. Each `run` call
+ * returns a promise that resolves with the results of the tasks.
+ *
+ * Total order is guaranteed for all task results, and each run calls. That is, every
+ * call to `run` will only resolve afer the previous `run` has resolved. The results
+ * array is ordered by the same ordering as the submitted tasks array.
+ */
 class TaskQueue {
   private queue: Array<MapperWithProps>
-  private pending: Promise<IResult[]>
+  private pending: Promise<ITaskResult[]>
 
   constructor() {
     this.queue = []
@@ -29,7 +31,7 @@ class TaskQueue {
   }
 
   // TODO: Refactor this method so there isn't so many mutations going on!
-  run(thunk: IActionThunk<any>, state: any): Promise<IResult[]> {
+  run(thunk: IActionThunk<any>, state: any): Promise<ITaskResult[]> {
     // If a component applies transformations using `.chain` but need to commit one of the intermediary
     // actions to the system, then this commit function can be used.
     const commit = Task.tap(thunk)
@@ -90,7 +92,7 @@ class TaskQueue {
             ), 0)
           })
         })
-      }).then((results: IResult[]) => {
+      }).then((results: ITaskResult[]) => {
         return results
       })
     }
