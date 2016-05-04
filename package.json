@@ -1,7 +1,7 @@
 {
   "name": "react-transact",
   "version": "0.2.0",
-  "description": "Data transaction manager for react",
+  "description": "Simple, effortless way to fetch data and make them available to React components.",
   "repository": {
     "type": "git",
     "url": "https://github.com/pressly/react-transact"

@@ -5,118 +5,192 @@ Simple, effortless way to fetch data and make them available to React components
 Works with Redux and React-Router out of the box. Also supports server-side
 rendering!
 
+This project draws a lot of inspiration from the [`data.task`](https://github.com/folktale/data.task)
+library of [Folktale](http://folktalejs.org/). I highly recommend you check Folktale out!
+
 ## Goals
 
-The goal of this project is to make data fetching as simple and effortless
-as possible. We really like the philosophy behind Redux, to separate data
-reading and writing. The problem with plain Redux is that there isn't a
-clear way to get data into your store.
+The goal of this project is to make data fetching as simple, effortless, and robust
+as possible. There should only be one way to fetch and populate async data in
+the application, and it must guarantee rejection or resolution, as well
+as total ordering. Mechanisms for failure recovery should be simple dead simple --
+this is currently a work-in-progress, and exists only in a low-level way (`Task#orElse`).
 
-## Example
+React Transact aims to make data fetching declarative and safe. This is
+achieved via the `@transact` decorator and the `Task<A,B>` type. All data
+fetching should go through `transact`, which will ensure correct ordering,
+and predictable resolution.
 
-The following is an example of a todo app that lists todos by user.
-
-App.js:
+The `Task<A,B>` structure represents a disjunction for actions that depend on
+time. It can either contain a failure action of type `A`, or a successful action of type `B`.
+Projections on `Task<A,B>` is biased towards the right, successful (`B`).
 
 ```js
-import { RunContext } from 'react-transact'
-import React from 'react'
-import ReactDOM from 'react-dom'
-import UserTodos from './UserTodos'
-
-ReactDOM.render(
-  <div>
-    <h1>Todo App</h1>
-    <RunContext>
-      <UserTodos userId={1}/>
-    </RunContext>
-  </div>
-  ,
-  document.getElementById('app')
-)
-
+import {Task} from 'react-transact'
+new Task.resolve({ type: 'RESOLVED', payload: 1 })
+ .map(x => x + 1)
+ // This fork will succeed with `{ type: 'RESOLVED', payload: 2 }`
+ // because the `map` will map over the successful payload value.
+ .fork(
+   (failedAction) => console.log('Something went wrong', failedAction),
+   (successAction) => console.log('Yay', successAction)
+ )
 ```
 
-UserTodos.js:
+## Usage
+
+The following examples show how React Transact can be used in applications. 
+
+### Basic
+
+The following is a basic async Hello World example.
 
 ```js
-import { scan } from 'ramda'
-import { transact, taskCreator } from 'react-transact'
+import React, {Component} from 'react'
+import {RunContext, transact, taskCreator} from 'react-transact'
 
-const getUser = taskCreator(
-  'GET_USER_ERROR',
-  'USER_LOADED',
-  (userId) => fetch(`/users/${userId}`))
-
-const getUserTodos = taskCreator(
-  'GET_TODOS_ERROR',
-  'TODOS_LOADED',
-  (user) => fetch(`/users/${user.id}/todos`)
+// Creates a function that returns a Task when invoked.
+const sendMessage = ReactTransact.taskCreator(
+  'ERROR',      // action type for failure
+  'MESSAGE',    // action type for success
+  async x => x  // async function for payload resolution
 )
 
-// Run tasks when this component mounts
-@transact((state, props) => (
-  // Scan is like reduce, but returns each successively reduced value
-  scan(
-    // Chains the next task using the eventual result of current task
-    (task, next) => task.chain(next),
-    
-    // Initial task
-    getUser(props.userId),
-    
-    // Chainable task creators
-    [
-      getUserTodos
-    ]
-  )
-))
-// Regular react-redux connect, assuming the state is updated via above tasks
-@connect(
-  (state) => ({
-    todos: state.todos,
-    user: state.user
-  })
+// Wrap the HelloWorld component with @transact decorator.
+// Note: You can also use it as a plain function `transact(...)(HelloWorld)`.
+@transact(
+  (state, props, commit) => [
+    sendMessage('Hello World!')
+  ]
 )
-class UserTodos extends React.Component {
+class HelloWorld extends Component {
   render() {
-    const { todos, user } = this.props
-    return (
-      <div>
-        Showing todos for user = {user.name}:
-        { todos.map(t => <p>{ t.text }</p>) }
-      </div>
-    )
+    // `transact` prop is passed down from `@transact`
+    // It makse the store available whether you use Redux or not.
+    const { message } = this.props.transact.store.getState()
+    return <h1>{message}</h1>
+  }
+)
+
+// Reducer for our RunContext's local component state. (Redux not used here)
+const stateReducer = (state = {}, action) => {
+  if (action.type === 'MESSAGE') {
+    return { message: action.payload }
+  } else {
+    return state
   }
 }
-```
 
-For more examples, see the [examples](./examples) folder.
-
-## API
-
-### Task
-
-The `Task<A,B>` structure represents a disjunction for actions that depend on time.
-
-`Task<A,B>` may either contain an action of type A, or an action of type B.
-
-The left-side `A` of the disjunction represents a rejection, while the right-side `B`
-represents resolution. This structure is biased on the right-side, thus projections
-will take the right value over the left value.
-
-Example: 
-
-```js
-const sayHello = (name) => Task((rej, res) => {
-  try {
-    res({ type: 'RECEIVED_MESSAGE', payload: `Hello ${name}!` })
-  } catch (e) {
-    rej({ type: 'RECEIVED_MESSAGE_ERROR', payload: e })
-  }
-})
-
-// This will print 'Dispatched: { "type": "RECEIVED_MESSAGE", "payload": "Hello Bob!" }'
-sayHello('Bob').fork(
-  (x) => console.log(`Dispatched: ${JSON.stringify(x)}`)
+ReactDOM.render(
+  <RunContext stateReducer={stateReducer}>
+    <HelloWorld/>
+  </RunContext>,
+  document.getElementById('app')
 )
 ```
+
+Please see the [examples](./examples) folder more use-cases, including
+[server-side rendering](./examples/6-server-side-rendering/server.js).
+
+### Redux and Router
+
+The main use-case is for applications using Redux and React Router.
+
+Install the Redux middleware and render `RouterRunContext`:
+
+```js
+import React from 'react'
+import ReactDOM from 'react-dom'
+import {install, RouterRunContext, transact, taskCreator} from 'react-transact'
+import {Provider, connect} from 'react-redux'
+import {Router, Route} from 'react-router'
+import {createStore, applyMiddleware} from 'redux'
+
+const reducer = (state = {}, action) => {
+  if (action.type === 'ECHO')
+    return { message: action.payload }
+  else
+    return state
+}
+
+const transactMiddleware = install()
+
+// Note: `install()` returns a middleware with a `done` prop that is a Promise
+// that resolves when all tasks are resolved on matched routes.
+transactMiddleware.done.then(() => console.log('data loaded!'))
+
+const store = createStore(reducer, undefined, applyMiddleware(transactMiddleware))
+
+const echo = taskCreator('FAILED', 'ECHO', x => x)
+
+@transact((state, props) => [
+  echo(props.params.what)
+])
+@connect(state => state.message)
+class EchoHandler extends React.Component {
+  render() {
+    return <p>{ this.props.message }</p>
+  }
+}
+
+ReactDOM.render(
+  <Provider store={store}>
+    <Router render={props => <RouterRunContext {...props}/>}>
+      <Route path="/:what" component={EchoHandler}/>
+    </Router>
+  </Provider>,
+  document.getElementById('app')
+)
+```
+
+Use the `RouterRunContext` for `Router`.
+
+## Development
+
+Fork and clone this repo.
+
+Install dependencies:
+
+```
+npm install
+```
+
+Running tests:
+
+```
+npm test
+```
+
+Or, with faucet (recommended):
+
+```
+npm test | faucet
+```
+
+Running tests with watch (working on improveing this):
+
+```
+npm run test:watch
+```
+
+Building to ES5 (output is `umd/ReactTransact.js`):
+
+```
+npm run build
+```
+
+## Contributing
+
+Contributions are welcome! If you find any bugs, please create and issue
+with as much detail as possible to help debug.
+
+If you have any ideas for features, please open up an issue or pull-request.
+
+All pull-requests will be carefully reviewed, and merged once deemed satisfactory.
+
+## Alternative Projects
+
+Here are other projects that solves the async data problem.
+
+- [ReduxAsyncConnect](https://github.com/Rezonans/redux-async-connect) - Allows you to request async data, store them in Redux state and connect them to your react component.
+- [AsyncProps](https://github.com/ryanflorence/async-props) - Co-located data loading for React Router.
