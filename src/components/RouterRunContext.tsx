@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { RouterContext } from 'react-router'
-import RunContext from './../components/RunContext'
+import RunContext from './RunContext'
 import { IStore } from '../interfaces'
 
 type ILocation = {
@@ -13,6 +13,7 @@ type IProps = {
   render: Function
   onResolve: Function
   store: IStore
+  stateReducer: Function
   location: ILocation
   params: any
 }
@@ -29,7 +30,8 @@ export default class RouterRunContext extends React.Component<IProps,void> {
     render: React.PropTypes.func
   }
   static contextTypes = {
-    store: React.PropTypes.object.isRequired
+    store: React.PropTypes.object,
+    stateReducer: React.PropTypes.func
   }
   static defaultProps = {
     render: (props) => {
@@ -37,7 +39,8 @@ export default class RouterRunContext extends React.Component<IProps,void> {
     }
   }
   context: {
-    store: any
+    store: any,
+    stateReducer: any
   }
   _location: ILocation
   constructor(props) {
@@ -53,7 +56,7 @@ export default class RouterRunContext extends React.Component<IProps,void> {
       this.props.components
         .map(c => c._mapTasks)
         .filter(f => typeof f === 'function')
-        .forEach((mapper) => ctx.resolve(mapper, { immediate: true }))
+        .forEach((mapper) => ctx.resolve({ mapper, props: this.props }, { immediate: true }))
     }
     this._location = this.props.location
   }
@@ -65,6 +68,7 @@ export default class RouterRunContext extends React.Component<IProps,void> {
       <RunContext
         ref={RUN_CONTEXT}
         store={this.context.store || props.store}
+        stateReducer={this.context.stateReducer || props.stateReducer}
         onResolve={props.onResolve}
         params={props.params}
         location={props.location}>

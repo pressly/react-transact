@@ -1,7 +1,7 @@
 const test = require('tape')
 const sinon = require('sinon')
-const Task = require('../lib/internals/Task').default
-const TaskQueue = require('../lib/internals/TaskQueue').default
+const Task = require('../../../lib/internals/Task').default
+const TaskQueue = require('../../../lib/internals/TaskQueue').default
 
 test('TaskQueue', (t) => {
   t.plan(4)

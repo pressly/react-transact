@@ -29,9 +29,9 @@ const Container = transact(
   }
 )(
   // The state props is coming from RunContext.
-  ({ state }) => h('div', {},
+  ({ transact }) => h('div', {},
     h('h1', { className: 'container' },
-      [state.value]
+      [transact.store.getState().value]
     )
   )
 )

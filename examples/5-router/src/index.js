@@ -1,8 +1,8 @@
-import React, { Component } from 'react'
+import React from 'react'
 import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
 import { Router, Route, IndexRoute, hashHistory } from 'react-router'
-import { RouterRunContext } from 'react-transact/router'
+import { RouterRunContext } from 'react-transact'
 import configureStore from './configureStore'
 import App from './App'
 import Colors from './Colors'
@@ -16,14 +16,7 @@ ReactDOM.render(
   <div style={{ fontSize: '24px', textAlign: 'center' }}>
     <Provider store={store}>
       <Router history={hashHistory}
-              render={props => (
-                 <RouterRunContext
-                  onResolve={
-                    (results) => console.log('Resolved!', results)
-                  }
-                  {...props}/>
-                )
-              }>
+              render={props => <RouterRunContext {...props}/>}>
         <Route path="/" component={App}>
           <IndexRoute component={Colors}/>
           <Route path="echo/:what" component={Echo}/>

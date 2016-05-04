@@ -1,7 +1,7 @@
 const test = require('tape')
 const sinon = require('sinon')
-const effects = require('../lib/effects')
-const Task = require('../lib/internals/Task').default
+const effects = require('../../lib/effects')
+const Task = require('../../lib/internals/Task').default
 
 test('trace', (t) => {
   const { trace } = effects

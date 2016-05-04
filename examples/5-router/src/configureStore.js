@@ -1,4 +1,5 @@
-import { createStore } from 'redux'
+import {applyMiddleware, createStore} from 'redux'
+import {install} from 'react-transact'
 
 export default (initialState = {}) => createStore((state = {}, action) => {
   switch (action.type) {
@@ -15,4 +16,4 @@ export default (initialState = {}) => createStore((state = {}, action) => {
     default:
       return state
   }
-}, initialState)
+}, initialState, applyMiddleware(install()))
