@@ -1,4 +1,4 @@
-import { IAction, IActionThunk, IComputation, ITask } from './../interfaces'
+import {IAction, IActionThunk, IComputation, ITask, ITaskCreator, IChainTask} from './../interfaces'
 
 class Task<A,B> implements ITask<A,B> {
   computation: IComputation<A,B>
@@ -13,6 +13,13 @@ class Task<A,B> implements ITask<A,B> {
     return new Task((rej: IActionThunk<A>, __: IActionThunk<any>) => {
       rej(action)
     })
+  }
+
+  /*
+   * An empty task that will never resolve.
+   */
+  static empty(): ITask<any,any> {
+    return new Task((__: IActionThunk<any>, ___: IActionThunk<any>) => {})
   }
 
   /*
@@ -95,6 +102,19 @@ class Task<A,B> implements ITask<A,B> {
               payload: valueOrPromise
             })
           }
+        }
+      )
+    })
+  }
+
+  orElse<A2,B2>(f: IChainTask<A2,B2>): ITask<A2,B|B2> {
+    return new Task<A2,B2>((rej: IActionThunk<A2>, res: IActionThunk<B|B2>) => {
+      return this.fork(
+        (action: IAction<A>) => {
+          f(action.payload).fork(rej, res)
+        },
+        (action: IAction<B>) => {
+          res(action)
         }
       )
     })

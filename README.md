@@ -1,6 +1,16 @@
-# react-transact
+# React Transact
 
-Handle data transactions in a declarative way.
+Simple, effortless way to fetch data and make them available to React components.
+
+Works with Redux and React-Router out of the box. Also supports server-side
+rendering!
+
+## Goals
+
+The goal of this project is to make data fetching as simple and effortless
+as possible. We really like the philosophy behind Redux, to separate data
+reading and writing. The problem with plain Redux is that there isn't a
+clear way to get data into your store.
 
 ## Example
 

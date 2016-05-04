@@ -115,3 +115,31 @@ test('Task#tap', (t) => {
     t.end()
   })
 })
+
+test('Task#orElse', (t) => {
+  const goodTask = Task.resolve({ type: 'GOOD', payload: 'great!' })
+  const badTask = Task.reject({ type: 'BAD', payload: 'error' })
+  const elseCreator = a => Task.resolve({ type: 'GOOD', payload: `${a} has been handled :)`})
+
+  badTask.orElse(elseCreator).fork((action) => {
+    t.deepEqual(action, { type: 'GOOD', payload:'error has been handled :)' }, 'transforms failures to new Task')
+  })
+
+  goodTask.orElse(elseCreator).fork((action) => {
+    t.deepEqual(action, { type: 'GOOD', payload:'great!' }, 'does nothing if Task is already successful')
+  })
+
+  t.end()
+
+})
+
+test('Task.empty', (t) => {
+  const task = Task.empty()
+  task.fork(() => {
+    t.ok(false, 'should not resolve empty task')
+  })
+  // Give the Task a chance to fork.
+  setTimeout(() => {
+    t.end()
+  }, 10)
+})
