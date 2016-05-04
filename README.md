@@ -1,6 +1,6 @@
 # React Transact
 
-Simple, effortless way to fetch async data or perform async computations, and make 
+Simple, effortless way to fetch async data or perform computations, then make 
 the results available to React components.
 
 Works with Redux and React-Router out of the box. Also supports server-side
@@ -11,22 +11,28 @@ library of [Folktale](http://folktalejs.org/). I highly recommend you check Folk
 
 For a quick in-browser example, check out the [Counter app](http://embed.plnkr.co/OLH7WaNguDDake7yB6aQ/).
 
-## Goals
+**Note:** This is an early release of this library, so expect API to change
+in the future. I will try to keep public API as stable as possible, and strive
+to make additive changes as much as possible.
 
-The goal of this project is to make data fetching as simple, effortless, and robust
-as possible. There should only be one way to fetch and populate async data in
-the application, and it must guarantee rejection or resolution, as well
-as total ordering. Mechanisms for failure recovery should be simple dead simple --
-this is currently a work-in-progress, and exists only in a low-level way (`Task#orElse`).
+## Goal
 
-React Transact aims to make data fetching declarative and safe. This is
+The main goal of this project is to make data fetching as simple, effortless, and robust
+as possible. There should only be one obvious way to fetch and populate data in
+an application. Fetching data must be guaranteed to succeed or fail, as well
+maintain ordering (e.g. total ordering of fetch requests). Mechanisms for failure 
+recovery should be dead simple -- this is currently a work-in-progress, and only exposed
+as a low-level API (`Task#orElse`).
+
+React Transact aims to make data fetching declarative and robust. This is
 achieved via the `@transact` decorator and the `Task<A,B>` type. All data
-fetching should go through `transact`, which will ensure correct ordering,
-and predictable resolution.
+fetching should go through `transact.run` function,
+which will ensure correct ordering, and predictable resolution. (`transact` 
+is provided as a prop to `@transact`ed components)
 
 The `Task<A,B>` structure represents a disjunction for actions that depend on
 time. It can either contain a failure action of type `A`, or a successful action of type `B`.
-Projections on `Task<A,B>` is biased towards the right, successful (`B`).
+Projections on `Task<A,B>` is biased towards the right, successful value (of type `B`).
 
 ```js
 import {Task} from 'react-transact'
@@ -46,7 +52,7 @@ The following examples show how React Transact can be used in applications.
 
 ### Basic
 
-The following is a basic async Hello World example.
+The following is an async Hello World example.
 
 ```js
 import React, {Component} from 'react'
@@ -95,9 +101,9 @@ ReactDOM.render(
 Please see the [examples](./examples) folder more use-cases, including
 [server-side rendering](./examples/6-server-side-rendering/server.js).
 
-### Redux and Router
+### Redux and React Router
 
-The main use-case is for applications using Redux and React Router.
+This is the main use-case of React Transact.
 
 Install the Redux middleware and render `RouterRunContext`:
 
@@ -120,6 +126,7 @@ const transactMiddleware = install()
 
 // Note: `install()` returns a middleware with a `done` prop that is a Promise
 // that resolves when all tasks are resolved on matched routes.
+// This is needed if you are doing server-side rendering.
 transactMiddleware.done.then(() => console.log('data loaded!'))
 
 const store = createStore(reducer, undefined, applyMiddleware(transactMiddleware))
@@ -146,8 +153,6 @@ ReactDOM.render(
 )
 ```
 
-Use the `RouterRunContext` for `Router`.
-
 ## Development
 
 Fork and clone this repo.
@@ -158,7 +163,7 @@ Install dependencies:
 npm install
 ```
 
-Running tests:
+Run tests:
 
 ```
 npm test
@@ -170,13 +175,13 @@ Or, with faucet (recommended):
 npm test | faucet
 ```
 
-Running tests with watch (working on improveing this):
+Run tests with watch support (working on improving this):
 
 ```
 npm run test:watch
 ```
 
-Building to ES5 (output is `umd/ReactTransact.js`):
+Build to ES5 (output is `umd/ReactTransact.js`):
 
 ```
 npm run build
@@ -184,16 +189,18 @@ npm run build
 
 ## Contributing
 
-Contributions are welcome! If you find any bugs, please create and issue
+Contributions are welcome! If you find any bugs, please create an issue
 with as much detail as possible to help debug.
 
 If you have any ideas for features, please open up an issue or pull-request.
 
 All pull-requests will be carefully reviewed, and merged once deemed satisfactory.
 
+Documentation, fixing typos, etc. are definitely welcome as well!
+
 ## Alternative Projects
 
-Here are other projects that solves the async data problem.
+Here are other projects that solve the async data problem.
 
 - [ReduxAsyncConnect](https://github.com/Rezonans/redux-async-connect) - Allows you to request async data, store them in Redux state and connect them to your react component.
 - [AsyncProps](https://github.com/ryanflorence/async-props) - Co-located data loading for React Router.
