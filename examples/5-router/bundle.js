@@ -34903,72 +34903,108 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _dec, _dec2, _class;
+
 var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
 
 var _reactRouter = require('react-router');
 
+var _reactTransact = require('react-transact');
+
+var _reactRedux = require('react-redux');
+
+var _tasks = require('./tasks');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var itemStyle = { display: 'inline-block', margin: '0 3px', fontSize: '18px' };
 
-var App = function App(_ref) {
-  var children = _ref.children;
-  return _react2.default.createElement(
-    'div',
-    { style: { marginBottom: '20px', width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column' } },
-    _react2.default.createElement(
-      'ul',
-      { style: { borderBottom: 'solid 1px #ccc', margin: 0, padding: 0, listStyle: 'none' } },
-      _react2.default.createElement(
-        'li',
-        { style: itemStyle },
+var App = (_dec = (0, _reactTransact.transact)(function () {
+  return [(0, _tasks.changeColor)('cyan')];
+}), _dec2 = (0, _reactRedux.connect)(function () {
+  return {};
+}), _dec(_class = _dec2(_class = function (_Component) {
+  _inherits(App, _Component);
+
+  function App() {
+    _classCallCheck(this, App);
+
+    return _possibleConstructorReturn(this, Object.getPrototypeOf(App).apply(this, arguments));
+  }
+
+  _createClass(App, [{
+    key: 'render',
+    value: function render() {
+      return _react2.default.createElement(
+        'div',
+        { style: { marginBottom: '20px', width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column' } },
         _react2.default.createElement(
-          _reactRouter.Link,
-          { activeClassName: 'active', onlyActiveOnIndex: true, to: '/' },
-          'Colors'
-        )
-      ),
-      _react2.default.createElement(
-        'li',
-        { style: itemStyle },
+          'ul',
+          { style: { borderBottom: 'solid 1px #ccc', margin: 0, padding: 0, listStyle: 'none' } },
+          _react2.default.createElement(
+            'li',
+            { style: itemStyle },
+            _react2.default.createElement(
+              _reactRouter.Link,
+              { activeClassName: 'active', onlyActiveOnIndex: true, to: '/' },
+              'Colors'
+            )
+          ),
+          _react2.default.createElement(
+            'li',
+            { style: itemStyle },
+            _react2.default.createElement(
+              _reactRouter.Link,
+              { activeClassName: 'active', onlyActiveOnIndex: true, to: '/echo/buffalo' },
+              'Echo'
+            )
+          ),
+          _react2.default.createElement(
+            'li',
+            { style: itemStyle },
+            _react2.default.createElement(
+              _reactRouter.Link,
+              { activeClassName: 'active', onlyActiveOnIndex: true, to: '/greeting' },
+              'Greeting'
+            )
+          ),
+          _react2.default.createElement(
+            'li',
+            { style: itemStyle },
+            _react2.default.createElement(
+              _reactRouter.Link,
+              { activeClassName: 'active', onlyActiveOnIndex: true, to: '/message' },
+              'Message'
+            )
+          )
+        ),
         _react2.default.createElement(
-          _reactRouter.Link,
-          { activeClassName: 'active', onlyActiveOnIndex: true, to: '/echo/buffalo' },
-          'Echo'
+          'div',
+          { style: { flex: 1, display: 'flex' } },
+          this.props.children
         )
-      ),
-      _react2.default.createElement(
-        'li',
-        { style: itemStyle },
-        _react2.default.createElement(
-          _reactRouter.Link,
-          { activeClassName: 'active', onlyActiveOnIndex: true, to: '/greeting' },
-          'Greeting'
-        )
-      ),
-      _react2.default.createElement(
-        'li',
-        { style: itemStyle },
-        _react2.default.createElement(
-          _reactRouter.Link,
-          { activeClassName: 'active', onlyActiveOnIndex: true, to: '/message' },
-          'Message'
-        )
-      )
-    ),
-    _react2.default.createElement(
-      'div',
-      { style: { flex: 1, display: 'flex' } },
-      children
-    )
-  );
-};
+      );
+    }
+  }]);
+
+  return App;
+}(_react.Component)) || _class) || _class);
+
+
 App.displayName = 'App';
 exports.default = App;
 
-},{"react":240,"react-router":93}],257:[function(require,module,exports){
+},{"./tasks":264,"react":240,"react-redux":55,"react-router":93,"react-transact":101}],257:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -34983,24 +35019,22 @@ var _reactRedux = require('react-redux');
 
 var _reactTransact = require('react-transact');
 
-var _delay = require('./delay');
-
-var _delay2 = _interopRequireDefault(_delay);
+var _tasks = require('./tasks');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+var delay = function delay(ms) {
+  return function (x) {
+    return new Promise(function (res) {
+      setTimeout(function () {
+        return res(x);
+      }, ms);
+    });
+  };
+};
+
 var Colors = (0, _reactTransact.transact)(function (state, props, commit) {
-  return [(0, _reactTransact.taskCreator)('ERROR', 'COLOR_CHANGED', function () {
-    return 'black';
-  })(), (0, _reactTransact.taskCreator)('ERROR', 'COLOR_CHANGED', function () {
-    return (0, _delay2.default)('yellow', 1000);
-  })(), (0, _reactTransact.taskCreator)('ERROR', 'COLOR_CHANGED', function () {
-    return (0, _delay2.default)('red', 2000);
-  })(), (0, _reactTransact.taskCreator)('ERROR', 'COLOR_CHANGED', function () {
-    return (0, _delay2.default)('blue', 3000);
-  })(), (0, _reactTransact.taskCreator)('ERROR', 'COLOR_CHANGED', function () {
-    return (0, _delay2.default)('green', 4000);
-  })()];
+  return [(0, _tasks.changeColor)('black').map(delay(1000)), (0, _tasks.changeColor)('yellow').map(delay(2000)), (0, _tasks.changeColor)('red').map(delay(3000)), (0, _tasks.changeColor)('blue').map(delay(4000)), (0, _tasks.changeColor)('green').map(delay(5000))];
 })((0, _reactRedux.connect)(function (state) {
   return {
     color: state.color
@@ -35022,7 +35056,7 @@ Colors.displayName = 'Colors';
 
 exports.default = Colors;
 
-},{"./delay":262,"react":240,"react-redux":55,"react-transact":101}],258:[function(require,module,exports){
+},{"./tasks":264,"react":240,"react-redux":55,"react-transact":101}],258:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -35240,6 +35274,7 @@ exports.default = function () {
     var state = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
     var action = arguments[1];
 
+    console.log(action);
     switch (action.type) {
       case 'COLOR_CHANGED':
         return _extends({}, state, { color: action.payload, error: false });
@@ -35342,4 +35377,18 @@ _reactDom2.default.render(_react2.default.createElement(
   )
 ), document.getElementById('app'));
 
-},{"./App":256,"./Colors":257,"./Echo":258,"./Greeting":259,"./Message":260,"./configureStore":261,"react":240,"react-dom":52,"react-redux":55,"react-router":93,"react-transact":101}]},{},[263]);
+},{"./App":256,"./Colors":257,"./Echo":258,"./Greeting":259,"./Message":260,"./configureStore":261,"react":240,"react-dom":52,"react-redux":55,"react-router":93,"react-transact":101}],264:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.changeColor = undefined;
+
+var _reactTransact = require('react-transact');
+
+var changeColor = exports.changeColor = (0, _reactTransact.taskCreator)('ERROR', 'COLOR_CHANGED', function (color) {
+  return color;
+});
+
+},{"react-transact":101}]},{},[263]);

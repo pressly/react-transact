@@ -1,14 +1,18 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { transact, taskCreator } from 'react-transact'
-import delay from './delay'
+import { changeColor } from './tasks'
+
+const delay = (ms) => (x) => new Promise((res) => {
+  setTimeout(() => res(x), ms)
+})
 
 const Colors = transact((state, props, commit) => [
-  taskCreator('ERROR', 'COLOR_CHANGED', () => 'black')(),
-  taskCreator('ERROR', 'COLOR_CHANGED', () => delay('yellow', 1000))(),
-  taskCreator('ERROR', 'COLOR_CHANGED', () => delay('red', 2000))(),
-  taskCreator('ERROR', 'COLOR_CHANGED', () => delay('blue', 3000))(),
-  taskCreator('ERROR', 'COLOR_CHANGED', () => delay('green', 4000))()
+  changeColor('black').map(delay(1000)),
+  changeColor('yellow').map(delay(2000)),
+  changeColor('red').map(delay(3000)),
+  changeColor('blue').map(delay(4000)),
+  changeColor('green').map(delay(5000))
 ])(
   connect(state => ({
     color: state.color

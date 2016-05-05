@@ -2,6 +2,7 @@ import {applyMiddleware, createStore} from 'redux'
 import {install} from 'react-transact'
 
 export default (initialState = {}) => createStore((state = {}, action) => {
+  console.log(action)
   switch (action.type) {
     case 'COLOR_CHANGED':
         return { ...state, color: action.payload, error: false }
