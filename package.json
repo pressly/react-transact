@@ -18,6 +18,7 @@
   "scripts": {
     "clean": "rm -rf lib umd",
     "build": "npm run clean && npm run compile:ts && npm run compile:es6",
+    "release": "npm test && npm run build && xyz --repo git@github.com:pressly/react-transact.git",
     "compile:ts": "tsc",
     "compile:es6": "webpack -p lib/index.js umd/index.js",
     "test": "npm run compile:ts && tape 'test/**/*.js'",
@@ -55,6 +56,7 @@
     "tape": "4.5.1",
     "typescript": "1.8.9",
     "typings": "0.7.9",
-    "webpack": "1.13.0"
+    "webpack": "1.13.0",
+    "xyz": "0.5.0"
   }
 }
