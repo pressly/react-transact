@@ -173,7 +173,7 @@ test('RunContext with transact decorator', (t) => {
   })
 })
 
-test.only('transact decorator (warnings)', (t) => {
+test('transact decorator (warnings)', (t) => {
   const store = { dispatch: noop, getState: noop }
   const warn = sinon.spy(console, 'warn')
   const Foo = () => h('div')
