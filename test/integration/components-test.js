@@ -14,6 +14,7 @@ const taskCreator = require('../../lib/internals/taskCreator').default
 const install = require('../../lib/install').default
 
 const h = React.createElement
+const noop = () => {}
 
 test('transact decorator (empty)', (t) => {
   const resolve = () => {}
@@ -170,6 +171,38 @@ test('RunContext with transact decorator', (t) => {
 
     t.end()
   })
+})
+
+test.only('transact decorator (warnings)', (t) => {
+  const store = { dispatch: noop, getState: noop }
+  const warn = sinon.spy(console, 'warn')
+  const Foo = () => h('div')
+  Foo.displayName = 'Foo'
+  const Wrapped = transact(() => [])(Foo)
+  class FakeRouterContext extends React.Component {
+    getChildContext() {
+      return { router: {} }
+    }
+    render() {
+      return h(RunContext, { store }, this.props.children)
+    }
+  }
+  FakeRouterContext.childContextTypes = {
+    router: React.PropTypes.any
+  }
+
+  mount(h(FakeRouterContext, {}, h(Wrapped)))
+  t.ok(warn.called, 'warns user if non-route handler @transact component is mounted without { onMount: true }')
+  t.ok(/Foo/.test(warn.firstCall.args[0]), 'should include component name in warning message')
+
+  warn.reset()
+
+  const WrappedOnMount = transact(() => [], { onMount: true })(Foo)
+  mount(h(FakeRouterContext, {}, h(WrappedOnMount)))
+  t.ok(!warn.called, 'no warning if `onMount: true` is specified in options')
+
+  warn.restore()
+  t.end()
 })
 
 const MESSAGE = 'MESSAGE'

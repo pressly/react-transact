@@ -24,6 +24,7 @@ export default (mapTasks: IMapTasks, opts: IDecoratorOptions = defaultOpts): Fun
       static _mapTasks = mapTasks
       static displayName = `Transact(${getDisplayName(Wrappee)})`
       static contextTypes = {
+        router: React.PropTypes.any,
         transact: React.PropTypes.object
       }
 
@@ -38,6 +39,11 @@ export default (mapTasks: IMapTasks, opts: IDecoratorOptions = defaultOpts): Fun
         }
         if (typeof mapTasks === 'function') {
           this.transact.resolve({ props, mapper: mapTasks }, { immediate: opts.onMount })
+        }
+        if (context.router && !props.routeParams && !opts.onMount) {
+          console.warn(
+            `${Wrapped.displayName} is mounted in a router context, but is not a route handler. This can cause data loading issues on route change. You may want to add \`@transact(..., { onMount: true })\`.`
+          )
         }
       }
 
