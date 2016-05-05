@@ -1,6 +1,6 @@
 {
   "name": "react-transact",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Simple, effortless way to fetch data and make them available to React components.",
   "repository": {
     "type": "git",
