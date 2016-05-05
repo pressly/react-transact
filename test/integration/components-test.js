@@ -194,12 +194,16 @@ test('transact decorator (warnings)', (t) => {
   mount(h(FakeRouterContext, {}, h(Wrapped)))
   t.ok(warn.called, 'warns user if non-route handler @transact component is mounted without { onMount: true }')
   t.ok(/Foo/.test(warn.firstCall.args[0]), 'should include component name in warning message')
-
   warn.reset()
 
   const WrappedOnMount = transact(() => [], { onMount: true })(Foo)
   mount(h(FakeRouterContext, {}, h(WrappedOnMount)))
   t.ok(!warn.called, 'no warning if `onMount: true` is specified in options')
+  warn.reset()
+
+  const WrappedWithoutTasks = transact()(Foo)
+  mount(h(FakeRouterContext, {}, h(WrappedWithoutTasks)))
+  t.ok(!warn.called, 'no warning if @transact component has no tasks')
 
   warn.restore()
   t.end()
