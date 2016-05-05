@@ -1,7 +1,7 @@
 const webpack = require('webpack')
 module.exports = {
   output: {
-    library: 'ReactTransact',
+    library: 'index',
     libraryTarget: 'umd'
   },
   externals: [

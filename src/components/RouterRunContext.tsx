@@ -18,8 +18,6 @@ type IProps = {
   params: any
 }
 
-const RUN_CONTEXT = 'RUN_CONTEXT'
-
 const locationChanged = (a: ILocation, b: ILocation): boolean => {
   return a.search !== b.search || a.pathname !== b.pathname
 }

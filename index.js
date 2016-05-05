@@ -1,1 +1,1 @@
-module.exports = require('./umd/ReactTransact').default
+module.exports = require('./lib').default

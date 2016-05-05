@@ -1,6 +1,6 @@
 {
   "name": "react-transact",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Simple, effortless way to fetch data and make them available to React components.",
   "repository": {
     "type": "git",
@@ -16,7 +16,7 @@
     "README.md"
   ],
   "scripts": {
-    "clean": "rm -rf lib dist",
+    "clean": "rm -rf lib umd",
     "build": "npm run clean && npm run compile:ts && npm run compile:es6",
     "compile:ts": "tsc",
     "compile:es6": "webpack -p lib/index.js umd/ReactTransact.js",
