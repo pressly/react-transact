@@ -109,3 +109,79 @@ test('TaskQueue#run (completion)', (t) => {
     t.equal(dispatch.callCount, 2, 'resolves promise when mapped tasks are nil')
   })
 })
+
+test('Task#run (ordering)', (t) => {
+  const dispatch = sinon.spy()
+  const queue = new TaskQueue()
+  const message = (msg) =>
+    new Task((rej, res) => {
+      setTimeout(() => {
+        res({ type: 'MESSAGE', payload: msg })
+      }, Math.random() * 100)
+    })
+
+  const error = (msg) =>
+    new Task((rej, res) => {
+      setTimeout(() => {
+        rej({ type: 'ERROR', payload: msg })
+      }, Math.random() * 100)
+    })
+
+  queue.push({
+    mapper: () => [
+      message('Hey')
+    ],
+    props: {}
+  })
+
+  queue.push({
+    mapper: () => [
+      message('Hello')
+    ],
+    props: {}
+  })
+
+  // Run in the middle before queuing additional tasks.
+  // Need to ensure that we still maintain ordering even across multiple runs.
+  queue.run(dispatch)
+
+  queue.push({
+    mapper: () => [
+      error('Oops')
+    ],
+    props: {}
+  })
+
+  queue.push({
+    mapper: () => [
+      message('Bye')
+    ],
+    props: {}
+  })
+
+  queue.run(dispatch, {}).then(() => {
+    t.equal(dispatch.callCount, 4, 'dispatched all actions')
+
+    t.deepEqual(dispatch.firstCall.args[0], {
+      type: 'MESSAGE',
+      payload: 'Hey'
+    }, 'correctly dispatches first action')
+
+    t.deepEqual(dispatch.secondCall.args[0], {
+      type: 'MESSAGE',
+      payload: 'Hello'
+    }, 'correctly dispatches second action')
+
+    t.deepEqual(dispatch.thirdCall.args[0], {
+      type: 'ERROR',
+      payload: 'Oops'
+    }, 'correctly dispatches third action')
+
+    t.deepEqual(dispatch.getCall(3).args[0], {
+      type: 'MESSAGE',
+      payload: 'Bye'
+    }, 'correctly dispatches last action')
+
+    t.end()
+  })
+})

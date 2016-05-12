@@ -32,11 +32,11 @@ class Task<A,B> implements ITask<A,B> {
       return new Task((rej:IActionThunk<A>, res:IActionThunk<B>) => {
         task.fork(
           (a:IAction<A>) => {
-            fn(a)
+            fn(this, a, true)
             rej(a)
           },
           (b:IAction<B>) => {
-            fn(b)
+            fn(this, b, false)
             res(b)
           }
         )

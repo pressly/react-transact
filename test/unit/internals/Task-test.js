@@ -111,7 +111,8 @@ test('Task#tap', (t) => {
   Task.tap(spy)(task).fork((action) => {
     t.deepEqual(action, { type: 'GOOD', payload: 'Hello' })
     t.ok(spy.called, 'tap is called')
-    t.deepEqual(spy.firstCall.args[0], { type: 'GOOD', payload: 'Hello' }, 'tap is called with action')
+    t.deepEqual(spy.firstCall.args[1], { type: 'GOOD', payload: 'Hello' }, 'tap is called with action')
+    t.equal(spy.firstCall.args[2], false, 'tap is called with rejected boolean')
     t.end()
   })
 })

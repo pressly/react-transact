@@ -37,10 +37,11 @@ export default class RunContext extends React.Component<any,any> {
       this.state = {}
     // Using a standalone store
     } else {
-      this.state = props.stateReducer(undefined, STANDALONE_INIT)
+      const getState = () => this.state
+      this.state = props.stateReducer(this.state, STANDALONE_INIT)
       this.store = ComponentStateStore(
         props.stateReducer,
-        () => this.state,
+        getState,
         (state) => {
           setTimeout(() => this.setState(state), 0)
         }
