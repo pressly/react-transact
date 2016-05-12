@@ -45,9 +45,16 @@ const Container = transact()(
               onChange: (evt) => handleTermChange(transact, evt.target.value)
             })
           ]}),
-          h('ul', {
-            children: results.map(r => h('li', { key: r }, [r]))
-          })
+          results.length > 0
+            ? (
+              h('div', { children: [
+                h('h3', {}, 'Results'),
+                h('ul', {
+                  children: results.map(r => h('li', { key: r }, [r]))
+                })
+              ]})
+            )
+            : null
         ]})
       )
     }
