@@ -162,12 +162,12 @@ test('RunContext with transact decorator', (t) => {
   m.done.then(() => {
     t.deepEqual(store.getState().history, [
       { type: MESSAGE, payload: 'Hello Alice!' },
+      { type: ERROR, payload: 'Boo-urns' },
       { type: MESSAGE, payload: 'Bye Alice' },
-      { type: MESSAGE, payload: 'Bye Alice!' },
-      { type: ERROR, payload: 'Boo-urns' }
+      { type: MESSAGE, payload: 'Bye Alice!' }
     ], 'actions are dispatched in order')
 
-    t.equal(wrapped.text(), 'Hello Error!', 'text shows results of last dispatched action')
+    t.equal(wrapped.text(), 'Bye Alice!', 'text shows results of last dispatched action')
 
     t.end()
   })
