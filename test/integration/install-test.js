@@ -25,12 +25,8 @@ test('install middleware (no tasks)', (t) => {
 })
 
 test('install middleware (run one task)', (t) => {
-  let results = null
   const reducer = (state = '', action = {}) => {
     if (action.type === 'OK') return 'called'
-    if (action.type === actions.TASKS_RESOLVED) {
-      results = action.payload
-    }
     return state
   }
   const m = install()
@@ -43,7 +39,7 @@ test('install middleware (run one task)', (t) => {
 
   store.dispatch({ type: actions.RUN_SCHEDULED_TASKS })
 
-  m.done.then(() => {
+  m.done.then((results) => {
     t.equal(store.getState(), 'called', 'state is updated before done resolves')
     t.equal(results.length, 1, 'results array is dispatched with `TASKS_RESOLVED` action')
     t.deepEqual(results[0].action, { type: 'OK' }, 'action is in results')
@@ -150,12 +146,8 @@ test('install middleware (with routes)', (t) => {
 })
 
 test('install middleware (returning task from action creator)', (t) => {
-  let results = null
   const reducer = (state = '', action = {}) => {
     if (action.type === 'OK') return 'called'
-    if (action.type === actions.TASKS_RESOLVED) {
-      results = action.payload
-    }
     return state
   }
   const m = install()
@@ -163,7 +155,7 @@ test('install middleware (returning task from action creator)', (t) => {
 
   store.dispatch(Task.resolve({ type: 'OK' }))
 
-  m.done.then(() => {
+  m.done.then((results) => {
     t.equal(store.getState(), 'called', 'state is updated before done resolves')
     t.equal(results.length, 1, 'results array is dispatched with `TASKS_RESOLVED` action')
     t.deepEqual(results[0].action, { type: 'OK' }, 'action is in results')

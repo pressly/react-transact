@@ -30,7 +30,6 @@ class TaskQueue {
     this.queue.push(a)
   }
 
-  // TODO: Refactor this method so there isn't so many mutations going on!
   run(thunk: IActionThunk<any>, state: any): Promise<ITaskResult[]> {
     const chainPending = new Promise((outerResolve) => {
       if (this.size === 0) {
@@ -49,11 +48,7 @@ class TaskQueue {
               // If a component applies transformations using `.chain` but need to commit one of the intermediary
               // actions to the system, then this commit function can be used.
               const commit = Task.tap((task: ITask<any, any>, action, rejected: boolean) => {
-                accResults.push({
-                  task,
-                  action,
-                  rejected
-                })
+                thunk(action)
               })
 
               const x = m.mapper(state, m.props, commit)
