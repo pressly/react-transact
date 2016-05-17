@@ -148,3 +148,25 @@ test('install middleware (with routes)', (t) => {
     t.end()
   })
 })
+
+test('install middleware (returning task from action creator)', (t) => {
+  let results = null
+  const reducer = (state = '', action = {}) => {
+    if (action.type === 'OK') return 'called'
+    if (action.type === actions.TASKS_RESOLVED) {
+      results = action.payload
+    }
+    return state
+  }
+  const m = install()
+  const store = createStore(reducer, undefined, applyMiddleware(m))
+
+  store.dispatch(Task.resolve({ type: 'OK' }))
+
+  m.done.then(() => {
+    t.equal(store.getState(), 'called', 'state is updated before done resolves')
+    t.equal(results.length, 1, 'results array is dispatched with `TASKS_RESOLVED` action')
+    t.deepEqual(results[0].action, { type: 'OK' }, 'action is in results')
+    t.end()
+  })
+})

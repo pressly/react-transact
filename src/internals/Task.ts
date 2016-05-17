@@ -2,6 +2,7 @@ import {IAction, IActionThunk, IComputation, ITask, ITaskCreator, IChainTask} fr
 
 class Task<A,B> implements ITask<A,B> {
   computation: IComputation<A,B>
+  cleanup: Function
 
   static resolve<B>(action: IAction<B>): ITask<any,B> {
     return new Task((__: IActionThunk<any>, res: IActionThunk<B>) => {
@@ -44,8 +45,9 @@ class Task<A,B> implements ITask<A,B> {
     }
   }
 
-  constructor(computation: IComputation<A,B>) {
+  constructor(computation: IComputation<A,B>, cleanup: Function = () => {}) {
     this.computation = computation
+    this.cleanup = cleanup
   }
 
   fork(rejOrCombined: IActionThunk<A|B>, res?: IActionThunk<B>): void {
@@ -115,6 +117,7 @@ class Task<A,B> implements ITask<A,B> {
   }
 
   cancel(): void {
+    this.cleanup()
     this.computation = () => {}
   }
 }
