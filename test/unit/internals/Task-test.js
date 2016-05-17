@@ -47,7 +47,7 @@ test('Task#chain', (t) => {
   const inc = x => Task.resolve({ type: 'INCREMENT', payload: x + 1 })
   const bad = () => Task.reject({ type: 'BAD', payload: 'Boo-urns' })
 
-  k(1).chain(inc).fork(() => {}, (action) => {
+  k(1).chain(({ payload }) => inc(payload)).fork(() => {}, (action) => {
     t.deepEqual(action, {
       type: 'INCREMENT',
       payload: 2
@@ -67,12 +67,21 @@ test('Task#map', (t) => {
 
   const k = Task.resolve({ type: 'VALUE', payload: 'Hello' })
 
-  k.map(s => `${s} World!`).map(s => Promise.resolve(s.toUpperCase())).fork((action) => {
-    t.deepEqual(action, {
-      type: 'VALUE',
-      payload: 'HELLO WORLD!'
-    }, 'maps over payload')
-  })
+  k
+    .map(({ type, payload }) => ({
+      type,
+      payload: `${payload} World!`
+    }))
+    .map(({ type, payload }) => Promise.resolve({
+      type,
+      payload: payload.toUpperCase()
+    }))
+    .fork((action) => {
+      t.deepEqual(action, {
+        type: 'VALUE',
+        payload: 'HELLO WORLD!'
+      }, 'maps over payload')
+    })
 })
 
 test('Task.resolve', (t) => {
@@ -120,7 +129,7 @@ test('Task#tap', (t) => {
 test('Task#orElse', (t) => {
   const goodTask = Task.resolve({ type: 'GOOD', payload: 'great!' })
   const badTask = Task.reject({ type: 'BAD', payload: 'error' })
-  const elseCreator = a => Task.resolve({ type: 'GOOD', payload: `${a} has been handled :)`})
+  const elseCreator = ({ payload }) => Task.resolve({ type: 'GOOD', payload: `${payload} has been handled :)`})
 
   badTask.orElse(elseCreator).fork((action) => {
     t.deepEqual(action, { type: 'GOOD', payload:'error has been handled :)' }, 'transforms failures to new Task')

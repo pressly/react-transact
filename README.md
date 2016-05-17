@@ -37,7 +37,7 @@ Projections on `Task<A,B>` is biased towards the right, successful value (of typ
 ```js
 import {Task} from 'react-transact'
 new Task.resolve({ type: 'RESOLVED', payload: 1 })
- .map(x => x + 1)
+ .map(({ type, payload }) => ({ type, payload: payload + 1 })
  // This fork will succeed with `{ type: 'RESOLVED', payload: 2 }`
  // because the `map` will map over the successful payload value.
  .fork(

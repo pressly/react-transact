@@ -17,8 +17,8 @@ export interface ITask<A,B> {
   chain<A2,B2>(g: (arg: any) => ITask<A2,B2>): ITask<A|A2,B2>
 }
 
-export interface IChainTask<A,B> {
-  (x: any): ITask<A,B>
+export interface IChainTask<A,B,C,D> {
+  (x: IAction<A|B>): ITask<C,D>
 }
 
 export interface ITaskCreator<A,B> {
@@ -26,7 +26,7 @@ export interface ITaskCreator<A,B> {
 }
 
 export interface IMapTasks {
-  (state: any, props: any, commit: IChainTask<any,any>): Array<ITask<any,any>> | ITask<any,any>
+  (state: any, props: any, commit: (x: any) => ITask<any,any>): Array<ITask<any,any>> | ITask<any,any>
 }
 
 export type MapperWithProps = {

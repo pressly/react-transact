@@ -12,7 +12,7 @@ test('trace', (t) => {
   hello.chain(trace('Message is')).fork(() => {
     t.ok(log.called, 'console.log is called')
     t.equal(log.firstCall.args[0], 'Message is', 'message is printed')
-    t.equal(log.firstCall.args[1], 'Hello', 'payload is printed')
+    t.deepEqual(log.firstCall.args[1], { type: 'MESSAGE', payload: 'Hello' }, 'payload is printed')
     log.restore()
     t.end()
   })
@@ -25,7 +25,7 @@ test('tap', (t) => {
   
   hello.chain(tap(fn)).fork(() => {
     t.ok(fn.called, 'function is called')
-    t.equal(fn.firstCall.args[0], 'Hello', 'function is applied with payload')
+    t.deepEqual(fn.firstCall.args[0], { type: 'MESSAGE', payload: 'Hello' }, 'function is applied with payload')
     t.end()
   })
 })

@@ -125,10 +125,10 @@ test('RunContext with transact decorator', (t) => {
     // Commits the resulting action from here first.
     commit(
       Task.resolve({ type: MESSAGE, payload: 'Bye' })
-      .map(x => `${x} Alice`)
+      .map(({ payload: x, type }) => ({ type, payload: `${x} Alice` }))
     )
     // Then the resulting action from here will commit as well.
-    .map(x => `${x}!`)
+    .map(({ payload: x, type }) => ({ type, payload: `${x}!` }))
   ], { onMount: true })(
     () => null
   )

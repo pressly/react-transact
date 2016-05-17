@@ -16,7 +16,7 @@ import { applyValueOrPromise } from './internals/helpers'
  *   .fork((action) => { ... }) // This will cause the above log function to execute.
  * ```
  */
-export const tap = (fn: IActionThunk<any>): IChainTask<any,any> => (x: any) => new Task((rej: any, res: any) => {
+export const tap = (fn: IActionThunk<any>): IChainTask<any,any,any,any> => (x: any) => new Task((rej: any, res: any) => {
   applyValueOrPromise(fn, x)
   res(x)
 })
@@ -33,4 +33,4 @@ export const tap = (fn: IActionThunk<any>): IChainTask<any,any> => (x: any) => n
  *   .fork((action) => { ... })  // This will cause "Message received, 'Hello!'" to be logged.
  * ```
  */
-export const trace = (msg: string): IChainTask<any,any> => tap((a: any) => console.log(msg, a))
+export const trace = (msg: string): IChainTask<any,any,any,any> => tap((a: any) => console.log(msg, a))

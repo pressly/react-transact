@@ -62,14 +62,14 @@ class Task<A,B> implements ITask<A,B> {
     }
   }
 
-  chain<A2,B2>(g: (arg: any)=> ITask<A2,B2>): ITask<A|A2,B2> {
+  chain<A2,B2>(g: (arg: IAction<A|B>)=> ITask<A2,B2>): ITask<A|A2,B2> {
     return new Task((rej: IActionThunk<A|A2>, res: IActionThunk<B2>) => {
       this.fork(
         (action: IAction<A>) => {
           rej(action)
         },
         (action: IAction<B>) => {
-          g(action.payload).fork(
+          g(action).fork(
             (action: IAction<A2>) => rej(action),
             (action: IAction<B2>) => res(action)
           )
@@ -83,35 +83,29 @@ class Task<A,B> implements ITask<A,B> {
     return this.chain(g)
   }
 
-  map(g: (arg: any)=> any): ITask<A,B> {
+  map(g: (arg: IAction<A|B>)=> any): ITask<A,B> {
     return new Task((rej: IActionThunk<A>, res: IActionThunk<B>) => {
       this.fork(
         (action: IAction<A>) => rej(action),
         (action: IAction<B>) => {
-          const valueOrPromise = g(action.payload)
+          const valueOrPromise = g(action)
           if (typeof valueOrPromise.then === 'function') {
             valueOrPromise.then((value) => {
-              res({
-                type: action.type,
-                payload: value
-              })
+              res(value)
             })
           } else {
-            res({
-              type: action.type,
-              payload: valueOrPromise
-            })
+            res(valueOrPromise)
           }
         }
       )
     })
   }
 
-  orElse<A2,B2>(f: IChainTask<A2,B2>): ITask<A2,B|B2> {
+  orElse<A2,B2>(f: IChainTask<A,B,A2,B2>): ITask<A2,B|B2> {
     return new Task<A2,B2>((rej: IActionThunk<A2>, res: IActionThunk<B|B2>) => {
       return this.fork(
         (action: IAction<A>) => {
-          f(action.payload).fork(rej, res)
+          f(action).fork(rej, res)
         },
         (action: IAction<B>) => {
           res(action)
