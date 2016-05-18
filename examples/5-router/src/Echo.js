@@ -16,9 +16,9 @@ const Echo = transact((state, props, commit) => (
   reduce(
     (task, next) => {
       return (
-        commit(task)        // This will commit the resulting from this task action
-          .chain(next)      // Chain the resulting action to the next task
-          .map(delay(500))  // Map a 500ms delay before resolving task.
+        commit(task)                             // This will commit the resulting from this task action
+          .chain(({ payload }) => next(payload)) // Chain the resulting action to the next task
+          .map(delay(500))                       // Map a 500ms delay before resolving task.
       )
     },
     say(props.params.what),
