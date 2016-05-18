@@ -49,7 +49,8 @@ const makeMiddleware = (routerProps: IRouterProps) => {
             return
           case RUN_SCHEDULED_TASKS:
             if (pendingCount === 0) {
-              store.dispatch({ type: SCHEDULED_TASKS_PENDING })
+              // Need to push to next tick in case we are in the middle of a render.
+              setTimeout(() => store.dispatch({ type: SCHEDULED_TASKS_PENDING }))
             }
             pendingCount = pendingCount + 1
             queue
@@ -57,7 +58,8 @@ const makeMiddleware = (routerProps: IRouterProps) => {
               .then((results) => {
                 pendingCount = pendingCount - 1
                 if (pendingCount === 0) {
-                  store.dispatch({ type: SCHEDULED_TASKS_COMPLETED, payload: { results } })
+                  // Need to push to next tick in case we are in the middle of a render.
+                  setTimeout(() => store.dispatch({ type: SCHEDULED_TASKS_COMPLETED, payload: { results } }))
                   setTimeout(() => _res(results))
                 }
               })
