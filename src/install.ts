@@ -35,12 +35,10 @@ const makeMiddleware = (routerProps: IRouterProps) => {
       // TODO: Should come up with a better abstraction for Task vs action dispatches
       //       so that we don't need to fork the code like this with a duplicated resolve call.
       if (action instanceof Task) {
-        store.dispatch({ type: SCHEDULED_TASKS_PENDING })
         queue.push({ mapper: () => [action], props: {}})
         queue
           .run(store.dispatch, store.getState())
           .then((results) => {
-            store.dispatch({ type: SCHEDULED_TASKS_COMPLETED, payload: { results } })
             _res(results)
           })
       // Otherwise, check the action type.
