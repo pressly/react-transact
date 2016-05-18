@@ -161,9 +161,9 @@ test('RunContext with transact decorator', (t) => {
 
   m.done.then(() => {
     t.deepEqual(store.getState().history, [
-      { type: MESSAGE, payload: 'Bye Alice' },
       { type: MESSAGE, payload: 'Hello Alice!' },
       { type: ERROR, payload: 'Boo-urns' },
+      { type: MESSAGE, payload: 'Bye Alice' },
       { type: MESSAGE, payload: 'Bye Alice!' }
     ], 'actions are dispatched in order')
 

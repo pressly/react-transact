@@ -6,11 +6,12 @@ const h = React.createElement
 
 // Task creators
 const k = taskCreator('ERROR', 'VALUE', x => x)
-const inc = taskCreator('ERROR', 'VALUE', x => x + 1)
-const dec = taskCreator('ERROR', 'VALUE', x => x - 1)
+const inc = ({ type, payload }) => Task.resolve({ type, payload: payload + 1 })
+const dec = ({ type, payload }) => Task.resolve({ type, payload: payload - 1 })
 
 // Transforms
-const delay = (seconds) => (x) => new Promise((res) => setTimeout(() => res(x), seconds * 1000))
+const delay = (seconds) =>
+  (x) => new Promise((res) => setTimeout(() => res(x), seconds * 1000))
 
 // Create a HOC with transact.
 const Container = transact(

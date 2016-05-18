@@ -30,9 +30,12 @@ class TaskQueue {
     this.queue.push(a)
   }
 
-  run(thunk: IActionThunk<any>, state: any): Promise<ITaskResult[]> {
-    const chainPending = new Promise((outerResolve) => {
-      if (this.size === 0) {
+  run(callback: IActionThunk<any>, state: any): Promise<ITaskResult[]> {
+    const size = this.size
+    const prevPending = this.pending
+    // Chaining the previous pending tasks so they will resolve in order.
+    const chained = new Promise((outerResolve) => {
+      if (size === 0) {
         outerResolve([])
       } else {
         // WARNING: Mutating the queue so the next run call won't run through same queued tasks.
@@ -42,17 +45,19 @@ class TaskQueue {
         // WARNING: Watch out! These will mutate!
         let count = 0
 
-        currentQueue.reduce((acc: Promise<ITaskResult[]>, m: MapperWithProps): Promise<ITaskResult[]> => {
-          return acc.then((accResults: ITaskResult[]) => {
-            return new Promise((innerResolve) => {
-              // If a component applies transformations using `.chain` but need to commit one of the intermediary
-              // actions to the system, then this commit function can be used.
-              const commit = Task.tap((task: ITask<any, any>, action, rejected: boolean) => {
-                thunk(action)
-              })
+        currentQueue.reduce((acc:Promise<ITaskResult[]>, m:MapperWithProps):Promise<ITaskResult[]> => {
+          // If a component applies transformations using `.chain` but need to commit one of the intermediary
+          // actions to the system, then this commit function can be used.
+          const commit = Task.tap((task:ITask<any, any>, action, rejected:boolean) => {
+            callback(action)
+          })
 
-              const x = m.mapper(state, m.props, commit)
+          const x = m.mapper(state, m.props, commit)
+
+          return acc.then((accResults:ITaskResult[]) => {
+            return new Promise((innerResolve) => {
               const tasks = compact(Array.isArray(x) ? x : [x])
+
               // No tasks to run? Resolve immediately.
               if (tasks.length === 0) {
                 innerResolve(accResults)
@@ -60,7 +65,7 @@ class TaskQueue {
 
               let results = []
 
-              tasks.forEach((task: ITask<any,any>) => {
+              tasks.forEach((task:ITask<any,any>) => {
                 count = count + 1
 
                 // Bump to next tick so we give all tasks a chance to increment
@@ -68,7 +73,10 @@ class TaskQueue {
                 setTimeout(() => task.fork(
                   (a:IAction<any>) => {
                     count = count - 1
-                    // thunk(a)
+
+                    // Ensure the previous `run` completes before we invoke the callback.
+                    // This is done to guarantee total ordering of action dispatches.
+                    prevPending.then(() => callback(a))
 
                     results.push({
                       task, action: a
@@ -83,19 +91,13 @@ class TaskQueue {
               })
             })
           })
-        }, Promise.resolve([])).then((results: ITaskResult[]) => {
-          outerResolve(results)
-        })
+        }, Promise.resolve([])).then((results:ITaskResult[]) => outerResolve(results))
       }
     })
-
-    // Chaining the previous pending tasks so they will resolve in order.
-    this.pending = this.pending.then(() => chainPending).then((results: ITaskResult[]) => {
-      results.forEach((result: ITaskResult) => {
-        thunk(result.action)
-      })
-      return results
-    })
+    // Set the pending promise to the next in chain.
+    this.pending = this.pending.then(() => chained)
+    // Return new pending promise so the caller can wait for all previously scheduled tasks
+    // and currently scheduled tasks to complete before resolution (total ordering).
     return this.pending
   }
 }

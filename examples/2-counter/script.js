@@ -23,11 +23,11 @@ const Container = transact()(
   }
 )
 
-const stateReducer = (state, action) => {
+const stateReducer = (state = { counter: 0 }, action) => {
   switch (action.type) {
     case 'INCREMENT': return { counter: state.counter + 1 }
     case 'DECREMENT': return { counter: state.counter - 1 }
-    default: return (state || { counter: 0 })
+    default: return state
   }
 }
 
