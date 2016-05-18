@@ -1,3 +1,5 @@
-export const SCHEDULE_TASKS = '@@transact/SCHEDULE_TASKS'
-export const RUN_SCHEDULED_TASKS = '@@transact/RUN_SCHEDULED_TASKS'
-export const STANDALONE_INIT = '@@transact/STANDALONE_INIT'
+export const SCHEDULE_TASKS = '@@react-transact/SCHEDULE_TASKS'
+export const RUN_SCHEDULED_TASKS = '@@react-transact/RUN_SCHEDULED_TASKS'
+export const SCHEDULED_TASKS_COMPLETED = '@@react-transact/SCHEDULED_TASKS_COMPLETED'
+export const SCHEDULED_TASKS_PENDING = '@@react-transact/SCHEDULED_TASKS_PENDING'
+export const STANDALONE_INIT = '@@react-transact/STANDALONE_INIT'

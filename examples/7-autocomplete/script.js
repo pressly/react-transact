@@ -3,6 +3,8 @@ const taskCreator = ReactTransact.taskCreator
 const transact = ReactTransact.transact
 const install = ReactTransact.install
 const RunContext = ReactTransact.RunContext
+const SCHEDULED_TASKS_PENDING = ReactTransact.SCHEDULED_TASKS_PENDING
+const SCHEDULED_TASKS_COMPLETED = ReactTransact.SCHEDULED_TASKS_COMPLETED
 const h = React.createElement
 
 // Tasks
@@ -32,9 +34,9 @@ const handleTermChange = (transact, value) => {
 
 // Create a HOC with transact.
 const Container = transact()(
-  ReactRedux.connect(state => ({ results: state.results }))(
+  ReactRedux.connect(state => ({ pending: state.pending, results: state.results }))(
     // The state and transact props are coming from RunContext.
-    ({ transact, results }) => {
+    ({ transact, results, pending }) => {
       return h('div', {},
         h('div', { className: 'container', children: [
           h('div', { children: [
@@ -45,6 +47,7 @@ const Container = transact()(
               onChange: (evt) => handleTermChange(transact, evt.target.value)
             })
           ]}),
+          h('p', { className: 'loading' }, pending ? 'Loading...' : ''),
           results.length > 0
             ? (
               h('div', { children: [
@@ -67,6 +70,10 @@ const reducer = (state = { results: [] }, action) => {
       return { results: action.payload.results }
     case 'CLEAR':
       return { results: [] }
+    case SCHEDULED_TASKS_PENDING:
+      return Object.assign({}, state, { pending: true })
+    case SCHEDULED_TASKS_COMPLETED:
+      return Object.assign({}, state, { pending: false })
     default:
       return state
   }

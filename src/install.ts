@@ -1,5 +1,5 @@
 import {IStore, IAction, IMapTasks} from "./interfaces"
-import {RUN_SCHEDULED_TASKS, SCHEDULE_TASKS} from './actions'
+import {RUN_SCHEDULED_TASKS, SCHEDULE_TASKS, SCHEDULED_TASKS_PENDING, SCHEDULED_TASKS_COMPLETED} from './actions'
 import TaskQueue from './internals/TaskQueue'
 import {getTaskMappers} from './internals/helpers'
 import Task from './internals/Task'
@@ -32,11 +32,15 @@ const makeMiddleware = (routerProps: IRouterProps) => {
 
     return (next: Function) => (action: IAction<any>|Task<any,any>) => {
       // If a task is returned, then schedule and run it.
+      // TODO: Should come up with a better abstraction for Task vs action dispatches
+      //       so that we don't need to fork the code like this with a duplicated resolve call.
       if (action instanceof Task) {
+        store.dispatch({ type: SCHEDULED_TASKS_PENDING })
         queue.push({ mapper: () => [action], props: {}})
         queue
           .run(store.dispatch, store.getState())
           .then((results) => {
+            store.dispatch({ type: SCHEDULED_TASKS_COMPLETED, payload: { results } })
             _res(results)
           })
       // Otherwise, check the action type.
@@ -46,13 +50,17 @@ const makeMiddleware = (routerProps: IRouterProps) => {
             queue.push(action.payload)
             return
           case RUN_SCHEDULED_TASKS:
+            if (pendingCount === 0) {
+              store.dispatch({ type: SCHEDULED_TASKS_PENDING })
+            }
             pendingCount = pendingCount + 1
             queue
               .run(store.dispatch, store.getState())
               .then((results) => {
                 pendingCount = pendingCount - 1
                 if (pendingCount === 0) {
-                  _res(results)
+                  store.dispatch({ type: SCHEDULED_TASKS_COMPLETED, payload: { results } })
+                  setTimeout(() => _res(results))
                 }
               })
             return

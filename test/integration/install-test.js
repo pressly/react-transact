@@ -49,15 +49,20 @@ test('install middleware (run one task)', (t) => {
 
 test('install middleware (multiple tasks)', (t) => {
   const reducer = (state = [], action = {}) => {
-    if (action.type === 'OK') return state.concat([action])
-    else return state
+    if (action.type === 'OK' || action.type === actions.SCHEDULED_TASKS_PENDING || action.type === actions.SCHEDULED_TASKS_COMPLETED) {
+      return state.concat([action])
+    } else {
+      return state
+    }
   }
   const m = install()
   const store = createStore(reducer, undefined, applyMiddleware(m))
 
   // This should resolve after all tasks are finished.
   m.done.then(() => {
-    t.deepEqual(store.getState(), [
+    const state = store.getState()
+    t.equals(state[0].type, actions.SCHEDULED_TASKS_PENDING)
+    t.deepEqual(state.slice(1, 7), [
       { type: 'OK', payload: 1 },
       { type: 'OK', payload: 2 },
       { type: 'OK', payload: 3 },
@@ -65,6 +70,7 @@ test('install middleware (multiple tasks)', (t) => {
       { type: 'OK', payload: 5 },
       { type: 'OK', payload: 6 }
     ], 'waits for all tasks to resolve and dispatches their actions')
+    t.equals(state[7].type, actions.SCHEDULED_TASKS_COMPLETED)
     t.end()
   })
 
