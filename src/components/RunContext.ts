@@ -70,7 +70,8 @@ export default class RunContext extends React.Component<any,any> {
       type: SCHEDULE_TASKS, payload: mapTaskRuns
     })
     if (opts.immediate) {
-      this.runTasks()
+      // Bump to next tick to avoid synchronous component render issue.
+      setTimeout(() => this.runTasks())
     }
   }
 
