@@ -1,3 +1,19 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [React Transact](#react-transact)
+  - [Goal](#goal)
+  - [Usage](#usage)
+    - [Basic](#basic)
+- [{message}](#message)
+    - [Redux and React Router](#redux-and-react-router)
+  - [Development](#development)
+  - [Contributing](#contributing)
+  - [Alternative Projects](#alternative-projects)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # React Transact
 
 Simple, effortless way to fetch async data or perform computations, then make 

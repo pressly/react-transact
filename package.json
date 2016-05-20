@@ -22,7 +22,8 @@
     "compile:ts": "tsc",
     "compile:es6": "webpack -p lib/index.js umd/index.js",
     "test": "npm run compile:ts && tape 'test/**/*.js'",
-    "test:watch": "concurrently 'tsc -w' 'nodemon --delay 2000ms --exec tape \"test/**/*.js\"'"
+    "test:watch": "concurrently 'tsc -w' 'nodemon --delay 2000ms --exec tape \"test/**/*.js\"'",
+    "readme:toc": "doctoc README.md"
   },
   "author": {
     "name": "Jack Hsu",
@@ -43,6 +44,7 @@
     "babel-loader": "6.2.4",
     "babel-preset-es2015": "6.6.0",
     "concurrently": "2.0.0",
+    "doctoc": "1.0.0",
     "enzyme": "2.2.0",
     "jsdom": "8.4.1",
     "nodemon": "1.9.1",
