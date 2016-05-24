@@ -24,11 +24,11 @@ const searchWikipedia = taskCreator(
     }).promise().then(data => ({ results: data[1], term: term }))
 )
 
-const handleTermChange = (transact, value) => {
+const handleTermChange = (dispatch, value) => {
   if (value) {
-    transact.run(searchWikipedia(value))
+    dispatch(searchWikipedia(value))
   } else {
-    transact.run(clear)
+    dispatch(clear)
   }
 }
 
@@ -36,7 +36,7 @@ const handleTermChange = (transact, value) => {
 const Container = transact()(
   ReactRedux.connect(state => ({ pending: state.pending, results: state.results }))(
     // The state and transact props are coming from RunContext.
-    ({ transact, results, pending }) => {
+    ({ dispatch, results, pending }) => {
       return h('div', {},
         h('div', { className: 'container', children: [
           h('div', { children: [
@@ -44,7 +44,7 @@ const Container = transact()(
               autoFocus: true,
               placeholder: 'Start typing...',
               type: 'text',
-              onChange: (evt) => handleTermChange(transact, evt.target.value)
+              onChange: (evt) => handleTermChange(dispatch, evt.target.value)
             })
           ]}),
           h('p', { className: 'loading' }, pending ? 'Loading...' : ''),
