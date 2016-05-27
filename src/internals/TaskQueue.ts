@@ -70,24 +70,23 @@ class TaskQueue {
 
                 // Bump to next tick so we give all tasks a chance to increment
                 // count before being forked.
-                setTimeout(() => task.fork(
-                  (a:IAction<any>) => {
-                    count = count - 1
+                const both = (a:IAction<any>) => {
+                  count = count - 1
 
-                    // Ensure the previous `run` completes before we invoke the callback.
-                    // This is done to guarantee total ordering of action dispatches.
-                    prevPending.then(() => callback(a))
+                  // Ensure the previous `run` completes before we invoke the callback.
+                  // This is done to guarantee total ordering of action dispatches.
+                  prevPending.then(() => callback(a))
 
-                    results.push({
-                      task, action: a
-                    })
+                  results.push({
+                    task, action: a
+                  })
 
-                    // Once the last computation finishes, resolve promise.
-                    if (count === 0) {
-                      innerResolve(accResults.concat(results))
-                    }
+                  // Once the last computation finishes, resolve promise.
+                  if (count === 0) {
+                    innerResolve(accResults.concat(results))
                   }
-                ), 0)
+                }
+                setTimeout(() => task.fork(both, both), 0)
               })
             })
           })

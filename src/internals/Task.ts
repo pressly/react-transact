@@ -50,18 +50,11 @@ class Task<A,B> implements ITask<A,B> {
     this.cleanup = cleanup
   }
 
-  fork(rejOrCombined: IActionThunk<A|B>, res?: IActionThunk<B>): void {
-    if (typeof res === 'function') {
-      this.computation(
-        (a: IAction<A>): void => rejOrCombined(a),
-        (b: IAction<B>): void => res(b)
-      )
-    } else {
-      this.computation(
-        (a: IAction<A>): void => rejOrCombined(a),
-        (b: IAction<B>): void => rejOrCombined(b)
-      )
-    }
+  fork(rej: IActionThunk<A|B>, res: IActionThunk<B>): void {
+    this.computation(
+      (a: IAction<A>): void => rej(a),
+      (b: IAction<B>): void => res(b)
+    )
   }
 
   chain<A2,B2>(g: (arg: IAction<A|B>)=> ITask<A2,B2>): ITask<A|A2,B2> {

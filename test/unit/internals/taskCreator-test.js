@@ -12,19 +12,19 @@ test('taskCreator (sync)', (t) => {
 
   t.ok(x() instanceof Task, 'returns a task creator')
 
-  x().fork((action) => {
+  x().fork(() => {}, (action) => {
     t.deepEqual(action, {
       type: 'GOOD',
       payload: 42
-    })
-  }, 'forks to right side of the disjunction')
+    }, 'forks to right side of the disjunction')
+  })
 
   y().fork((action) => {
     t.deepEqual(action, {
       type: 'BAD',
       payload: 'Oops'
-    })
-  }, 'forks to left side of the disjunction')
+    }, 'forks to left side of the disjunction')
+  }, () => {})
 })
 
 test('taskCreator (async)', (t) => {
@@ -33,17 +33,17 @@ test('taskCreator (async)', (t) => {
   const x = taskCreator('BAD', 'GOOD', () => Promise.resolve(42))
   const y = taskCreator('BAD', 'GOOD', () => Promise.reject('Oops'))
 
-  x().fork((action) => {
+  x().fork(() => {}, (action) => {
     t.deepEqual(action, {
       type: 'GOOD',
       payload: 42
-    })
-  }, 'forks to right side of the disjunction')
+    }, 'forks to right side of the disjunction')
+  })
 
   y().fork((action) => {
     t.deepEqual(action, {
       type: 'BAD',
       payload: 'Oops'
-    })
-  }, 'forks to left side of the disjunction')
+    }, 'forks to left side of the disjunction')
+  }, () => {})
 })

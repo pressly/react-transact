@@ -25,21 +25,6 @@ test('Task#fork (with two thunks)', (t) => {
   })
 })
 
-test('Task#fork (with one thunk)', (t) => {
-  t.plan(2)
-
-  const left = Task.reject({ type: 'BAD' })
-  const right = Task.resolve({ type: 'GOOD' })
-
-  left.fork((action) => {
-    t.deepEqual(action, { type: 'BAD' }, 'dispatches to the left side of disjunction')
-  })
-
-  right.fork((action) => {
-    t.deepEqual(action, { type: 'GOOD' }, 'dispatches to the right side of disjunction')
-  })
-})
-
 test('Task#chain', (t) => {
   t.plan(2)
 
@@ -76,7 +61,7 @@ test('Task#map', (t) => {
       type,
       payload: payload.toUpperCase()
     }))
-    .fork((action) => {
+    .fork(() => {}, (action) => {
       t.deepEqual(action, {
         type: 'VALUE',
         payload: 'HELLO WORLD!'
@@ -117,7 +102,7 @@ test('Task.reject', (t) => {
 test('Task#tap', (t) => {
   const task = Task.resolve({ type: 'GOOD', payload: 'Hello' })
   const spy = sinon.spy()
-  Task.tap(spy)(task).fork((action) => {
+  Task.tap(spy)(task).fork(() => {}, (action) => {
     t.deepEqual(action, { type: 'GOOD', payload: 'Hello' })
     t.ok(spy.called, 'tap is called')
     t.deepEqual(spy.firstCall.args[1], { type: 'GOOD', payload: 'Hello' }, 'tap is called with action')
@@ -131,11 +116,11 @@ test('Task#orElse', (t) => {
   const badTask = Task.reject({ type: 'BAD', payload: 'error' })
   const elseCreator = ({ payload }) => Task.resolve({ type: 'GOOD', payload: `${payload} has been handled :)`})
 
-  badTask.orElse(elseCreator).fork((action) => {
+  badTask.orElse(elseCreator).fork(() => {}, (action) => {
     t.deepEqual(action, { type: 'GOOD', payload:'error has been handled :)' }, 'transforms failures to new Task')
   })
 
-  goodTask.orElse(elseCreator).fork((action) => {
+  goodTask.orElse(elseCreator).fork(() => {}, (action) => {
     t.deepEqual(action, { type: 'GOOD', payload:'great!' }, 'does nothing if Task is already successful')
   })
 
@@ -161,7 +146,7 @@ test('Task#cancel', (t) => {
 
 test('Task.empty', (t) => {
   const task = Task.empty()
-  task.fork(() => {
+  task.fork(() => {}, () => {
     t.ok(false, 'should not resolve empty task')
   })
   // Give the Task a chance to fork.
