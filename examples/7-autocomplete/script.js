@@ -12,6 +12,7 @@ const clear = Task.resolve({ type: 'CLEAR' })
 const searchWikipedia = taskCreator(
   'ERROR',
   'RESULTS',
+  'PENDING',
   (term) =>
     $.ajax({
       url: 'http://en.wikipedia.org/w/api.php',
@@ -67,13 +68,11 @@ const Container = transact()(
 const reducer = (state = { results: [] }, action) => {
   switch (action.type) {
     case 'RESULTS':
-      return { results: action.payload.results }
+      return { results: action.payload.results, pending: false  }
     case 'CLEAR':
-      return { results: [] }
-    case SCHEDULED_TASKS_PENDING:
+      return { results: [], pending: false  }
+    case 'PENDING':
       return Object.assign({}, state, { pending: true })
-    case SCHEDULED_TASKS_COMPLETED:
-      return Object.assign({}, state, { pending: false })
     default:
       return state
   }

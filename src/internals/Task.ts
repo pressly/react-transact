@@ -50,10 +50,12 @@ class Task<A,B> implements ITask<A,B> {
     this.cleanup = cleanup
   }
 
-  fork(rej: IActionThunk<A|B>, res: IActionThunk<B>): void {
+  fork(rej: IActionThunk<A|B>, res: IActionThunk<B>, progress?: IActionThunk<any>, cancel?: IActionThunk<any>): void {
     this.computation(
       (a: IAction<A>): void => rej(a),
-      (b: IAction<B>): void => res(b)
+      (b: IAction<B>): void => res(b),
+      (c: IAction<any>): void => progress(c),
+      (d: IAction<any>): void => cancel(d)
     )
   }
 

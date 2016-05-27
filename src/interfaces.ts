@@ -8,12 +8,12 @@ export interface IActionThunk<A> {
 }
 
 export interface IComputation<A,B> {
-  (reject: IActionThunk<A>, resolve: IActionThunk<B>): void
+  (reject: IActionThunk<A>, resolve: IActionThunk<B>, progress?: IActionThunk<any>, cancel?: IActionThunk<any>): void
 }
 
 export interface ITask<A,B> {
   computation: IComputation<A,B>
-  fork(rejOrCombined: IActionThunk<A|B>, res?: IActionThunk<B>): void
+  fork(rej: IActionThunk<A|B>, res: IActionThunk<B>, progress?: IActionThunk<any>, cancel?: IActionThunk<any>): void
   chain<A2,B2>(g: (arg: any) => ITask<A2,B2>): ITask<A|A2,B2>
 }
 

@@ -45,7 +45,7 @@ test('TaskQueue', (t) => {
 })
 
 test('TaskQueue#run (completion)', (t) => {
-  t.plan(10)
+  t.plan(11)
 
   const dispatch = sinon.spy()
   const queue = new TaskQueue()
@@ -75,7 +75,10 @@ test('TaskQueue#run (completion)', (t) => {
 
   queue.push({
     mapper: (state, props) => [
-      Task.resolve({ type: 'GOOD', payload: `${state.name} says "${props.type}!"` })
+      new Task((rej, res, progress) => {
+        progress({ type: 'PROGRESS' })
+        res({ type: 'GOOD', payload: `${state.name} says "${props.type}!"` })
+      })
     ],
     props: { type: 'Bye' }
   })
@@ -83,8 +86,11 @@ test('TaskQueue#run (completion)', (t) => {
   const p2 = queue.run(dispatch, { name: 'Bob' })
 
   p2.then(() => {
-    t.equal(dispatch.callCount, 2, 'maintains total ordering (first run completes before second)')
+    t.equal(dispatch.callCount, 3, 'maintains total ordering (first run completes before second)')
     t.deepEqual(dispatch.secondCall.args[0], {
+      type: 'PROGRESS'
+    })
+    t.deepEqual(dispatch.thirdCall.args[0], {
       type: 'GOOD', payload: 'Bob says "Bye!"'
     })
   })
@@ -92,7 +98,7 @@ test('TaskQueue#run (completion)', (t) => {
   const p3 = queue.run(dispatch, null)
 
   p3.then(() => {
-    t.equal(dispatch.callCount, 2, 'resolves promise when no computations are queued')
+    t.equal(dispatch.callCount, 3, 'resolves promise when no computations are queued')
   })
 
   queue.push({
@@ -106,7 +112,7 @@ test('TaskQueue#run (completion)', (t) => {
   const p4 = queue.run(dispatch, null)
 
   p4.then(() => {
-    t.equal(dispatch.callCount, 2, 'resolves promise when mapped tasks are nil')
+    t.equal(dispatch.callCount, 3, 'resolves promise when mapped tasks are nil')
   })
 })
 

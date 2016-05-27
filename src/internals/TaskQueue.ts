@@ -48,7 +48,7 @@ class TaskQueue {
         currentQueue.reduce((acc:Promise<ITaskResult[]>, m:MapperWithProps):Promise<ITaskResult[]> => {
           // If a component applies transformations using `.chain` but need to commit one of the intermediary
           // actions to the system, then this commit function can be used.
-          const commit = Task.tap((task:ITask<any, any>, action, rejected:boolean) => {
+          const commit = Task.tap((task:ITask<any, any>, action, rejected: boolean) => {
             callback(action)
           })
 
@@ -70,7 +70,7 @@ class TaskQueue {
 
                 // Bump to next tick so we give all tasks a chance to increment
                 // count before being forked.
-                const both = (a:IAction<any>) => {
+                const rejAndRes = (a: IAction<any>) => {
                   count = count - 1
 
                   // Ensure the previous `run` completes before we invoke the callback.
@@ -86,7 +86,12 @@ class TaskQueue {
                     innerResolve(accResults.concat(results))
                   }
                 }
-                setTimeout(() => task.fork(both, both), 0)
+
+                setTimeout(() => task.fork(
+                  rejAndRes,
+                  rejAndRes,
+                  (c) => prevPending.then(() => callback(c))
+                ), 0)
               })
             })
           })
