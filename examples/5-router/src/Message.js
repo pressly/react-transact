@@ -1,5 +1,5 @@
-import React from 'react'
-import { taskCreator, transact } from 'react-transact'
+import React, { Component } from 'react'
+import { taskCreator } from 'react-transact'
 import { connect } from 'react-redux'
 
 const changeMessage = taskCreator(
@@ -8,34 +8,27 @@ const changeMessage = taskCreator(
   (message) => message
 )  
 
-const Message =
-transact(
-  // No tasks to transact on route change.
-)(
-connect(
+@connect(
   state => ({ message: state.message })
-)(
-  class extends React.Component {
-    render() {
-      const { message, transact } = this.props
-      return (
-        <div className="content">
-          <p>You said: "{ message }"</p>
+)
+export default class Message extends Component {
+  render() {
+    const { message, dispatch } = this.props
+    return (
+      <div className="content">
+        <p>You said: "{ message }"</p>
 
-          <p>
-            Say something else:
-          </p>
-          <form onSubmit={(evt) => {
-              evt.preventDefault()
-              transact.run(changeMessage(this.refs.input.value))
-            }}>
-            <input ref="input"/>
-            <button>Go</button>
-          </form>
-        </div>
-      )
-    }
+        <p>
+          Say something else:
+        </p>
+        <form onSubmit={(evt) => {
+            evt.preventDefault()
+            dispatch(changeMessage(this.refs.input.value))
+          }}>
+          <input ref="input"/>
+          <button>Go</button>
+        </form>
+      </div>
+    )
   }
-))
-
-export default Message
+}

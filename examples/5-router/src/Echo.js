@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { transact, taskCreator } from 'react-transact'
 import { reduce } from 'ramda'
@@ -12,7 +12,7 @@ const delay = (ms) => (x) => new Promise((res) => {
   setTimeout(() => res(x), ms)
 })
 
-const Echo = transact((state, props, commit) => (
+@transact((state, props, commit) => (
   reduce(
     (task, next) => {
       return (
@@ -30,16 +30,17 @@ const Echo = transact((state, props, commit) => (
       repeat
     ]
   )
-))(
-  connect(state => ({
-    what: state.what
-  })
-)(({ what}) => (
-    <div className="content">
-      { what}
-    </div>
-)))
-
-Echo.displayName = 'Echo'
-
-export default Echo
+))
+@connect(state => ({
+  what: state.what
+}))
+export default class Echo extends Component {
+  render() {
+    const { what } = this.props
+    return (
+      <div className="content">
+        { what}
+      </div>
+    )
+  }
+}

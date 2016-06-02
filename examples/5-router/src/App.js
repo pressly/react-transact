@@ -6,13 +6,9 @@ import { changeColor } from './tasks'
 
 const itemStyle = { display: 'inline-block', margin: '0 3px', fontSize: '18px' }
 
-@transact(
-  () => [
-    changeColor('cyan')
-  ],
-)
+@transact(() => changeColor('cyan'))
 @connect(() => ({}))
-class App extends Component {
+export default class App extends Component {
   render() {
     return  (
       <div style={{ marginBottom: '20px', width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -37,6 +33,3 @@ class App extends Component {
     )
   }
 }
-
-App.displayName = 'App'
-export default App
