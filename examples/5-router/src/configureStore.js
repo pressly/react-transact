@@ -1,6 +1,8 @@
 import {applyMiddleware, createStore} from 'redux'
 import {install} from 'react-transact'
 
+const m = install()
+
 export default (initialState = {}) => createStore((state = {}, action) => {
   console.log(action)
   switch (action.type) {
@@ -17,4 +19,6 @@ export default (initialState = {}) => createStore((state = {}, action) => {
     default:
       return state
   }
-}, initialState, applyMiddleware(install()))
+}, initialState, applyMiddleware(m))
+
+m.done.then(() => console.log('initialized!'))

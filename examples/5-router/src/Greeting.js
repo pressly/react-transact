@@ -3,7 +3,7 @@ import { taskCreator, transact } from 'react-transact'
 import { connect } from 'react-redux'
 import delay from './delay'
 
-@transact((state, props, commit) => [
+@transact.route(() => [
   taskCreator('ERROR', 'NAME_CHANGED', () => delay('Alice', 1000))(),
   taskCreator('ERROR', 'NAME_CHANGED', () => delay('Bob', 2000))(),
   taskCreator('ERROR', 'NAME_CHANGED', () => delay(null, 3000, true))(),

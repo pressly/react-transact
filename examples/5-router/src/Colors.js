@@ -7,7 +7,7 @@ const delay = (ms) => (x) => new Promise((res) => {
   setTimeout(() => res(x), ms)
 })
 
-@transact((state, props, commit) => [
+@transact.route(() => [
   changeColor('black').map(delay(1000)),
   changeColor('yellow').map(delay(2000)),
   changeColor('red').map(delay(3000)),

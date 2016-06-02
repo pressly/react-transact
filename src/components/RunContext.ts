@@ -66,9 +66,7 @@ export default class RunContext extends React.Component<any,any> {
   }
 
   resolve(mapTaskRuns: MapperWithProps, opts: IResolveOptions = defaultResolveOpts): void {
-    this.store.dispatch({
-      type: SCHEDULE_TASKS, payload: mapTaskRuns
-    })
+    this.store.dispatch({ type: SCHEDULE_TASKS, payload: mapTaskRuns })
     if (opts.immediate) {
       // Bump to next tick to avoid synchronous component render issue.
       setTimeout(() => this.runTasks())
