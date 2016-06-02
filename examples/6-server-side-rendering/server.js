@@ -1,10 +1,10 @@
 import express from 'express'
 import React from 'react'
 import ReactDOM from 'react-dom/server'
-import {Route, match} from 'react-router'
+import {Route, match, RouterContext } from 'react-router'
 import {Provider, connect} from 'react-redux'
 import {createStore, applyMiddleware} from 'redux'
-import {transact, taskCreator, RouterRunContext, install} from '../../index'
+import {transact, taskCreator, RunContext, install} from '../../index'
 
 const server = express()
 
@@ -64,7 +64,9 @@ server.listen(8080, () => {
 
       const documentElement = (
         <Provider store={store}>
-          <RouterRunContext {...routerProps}/>
+          <RunContext>
+            <RouterContext {...routerProps}/>
+          </RunContext>
         </Provider>
       )
 
