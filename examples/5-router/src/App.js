@@ -6,7 +6,9 @@ import { changeColor } from './tasks'
 
 const itemStyle = { display: 'inline-block', margin: '0 3px', fontSize: '18px' }
 
-@transact(() => changeColor('cyan'))
+@transact(() => changeColor('cyan'), {
+  shouldUpdate: () => false
+})
 @connect(() => ({}))
 export default class App extends Component {
   render() {

@@ -41,23 +41,14 @@ export default class RouterRunContext extends React.Component<IProps,void> {
     stateReducer: any
   }
   runContext: RunContext
-  _location: ILocation
-  constructor(props) {
-    super(props)
-    this._location = { pathname: '', search: '' }
-  }
-  componentDidMount() {
-    this._location = this.props.location
-  }
-  componentDidUpdate() {
-    if (locationChanged(this._location, this.props.location)) {
+  componentWillUpdate(nextProps) {
+    if (locationChanged(this.props.location, nextProps.location)) {
       const ctx = this.runContext
       this.props.components
         .map(c => c._mapTasks)
         .filter(f => typeof f === 'function')
         .forEach((mapper) => ctx.resolve({ mapper, props: this.props }, { immediate: true }))
     }
-    this._location = this.props.location
   }
   render() {
     const props = Object.assign({}, this.props)
