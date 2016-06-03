@@ -3,7 +3,6 @@ import route from './decorators/route'
 import _transact from './decorators/transact'
 import taskCreator from './internals/taskCreator'
 import RunContext from './components/RunContext'
-import RouterRunContext from './components/RouterRunContext'
 import install from './install'
 import {RUN_SCHEDULED_TASKS, SCHEDULE_TASKS, STANDALONE_INIT, SCHEDULED_TASKS_PENDING, SCHEDULED_TASKS_COMPLETED} from './actions'
 
@@ -21,7 +20,6 @@ export {
   taskCreator,
   Task,
   RunContext,
-  RouterRunContext,
   install
 }
 
@@ -36,6 +34,5 @@ export default {
   taskCreator,
   Task,
   RunContext,
-  RouterRunContext,
   install
 }
