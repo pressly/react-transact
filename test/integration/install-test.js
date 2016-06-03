@@ -5,7 +5,7 @@ const applyMiddleware = require('redux').applyMiddleware
 const actions = require('../../lib/actions')
 const Task = require('../../lib/internals/Task').default
 const RunContext = require('../../lib/components/RunContext').default
-const transact = require('../../lib/components/transact').default
+const transact = require('../../lib/decorators/transact').default
 const createStore = require('redux').createStore
 const sinon = require('sinon')
 

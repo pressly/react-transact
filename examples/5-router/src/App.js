@@ -6,7 +6,7 @@ import { changeColor } from './tasks'
 
 const itemStyle = { display: 'inline-block', margin: '0 3px', fontSize: '18px' }
 
-@transact.route('startingColor', (state, props) => changeColor(props.startingColor))
+@transact.route(['startingColor'], (state, props) => changeColor(props.startingColor))
 @connect(() => ({}))
 export default class App extends Component {
   render() {

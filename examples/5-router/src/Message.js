@@ -8,9 +8,7 @@ const changeMessage = taskCreator(
   (message) => message
 )  
 
-@connect(
-  state => ({ message: state.message })
-)
+@connect(state => ({ message: state.message }))
 export default class Message extends Component {
   render() {
     const { message, dispatch } = this.props

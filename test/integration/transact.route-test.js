@@ -60,14 +60,15 @@ test('route decorator - with route descriptor', (t) => {
 
   const SUT = route({
     params: ['what'],
-    query: ['who']
+    query: ['who'],
+    defaults: { what: 'Hey', who: 'Alice' }
   }, (state, { what, who }) =>
     Task.resolve({ type: MESSAGE, payload: `${what} ${who}` })
   )(() => h('p'))
 
   const wrapper = mount(h(createRoot(SUT), {
     params: { what: 'Hello' },
-    query: { who: 'Alice' }
+    location: { query: {} }
     , store }))
 
   m.done.then(() => {
@@ -78,15 +79,17 @@ test('route decorator - with route descriptor', (t) => {
       ]
     }, 'dispatches tasks mapped by route params')
 
-    wrapper.setProps({ params: { what: 'Bye' }, query: { who: 'Bob' } })
+    wrapper.setProps({ params: { what: 'Bye' }, location: { query: { who: 'Bob' } } })
+    wrapper.setProps({ params: {}, location: { query: { who: 'Joe' } } })
 
     // Bumping to next tick to allow tasks to complete.
     setTimeout(() => {
       t.deepEqual(store.getState(), {
-        message: 'Bye Bob',
+        message: 'Hey Joe',
         history: [
           { type: 'MESSAGE', payload: 'Hello Alice' },
-          { type: 'MESSAGE', payload: 'Bye Bob' }
+          { type: 'MESSAGE', payload: 'Bye Bob' },
+          { type: 'MESSAGE', payload: 'Hey Joe' }
         ]
       }, 'dispatches tasks mapped by route params')
       t.end()
@@ -119,7 +122,7 @@ const createRoot = Child => class extends React.Component {
           h(RunContext, { children:
             h(Child, {
               params: this.props.params,
-              query: this.props.query,
+              location: this.props.location,
               transact: { resolve: () => {} }
             })
           })

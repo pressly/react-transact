@@ -19,7 +19,7 @@ ReactDOM.render(
         <Router history={hashHistory}>
           <Route path="/:startingColor" component={App}>
             <IndexRoute component={Colors}/>
-            <Route path="echo/:what/:times" component={Echo}/>
+            <Route path="echo/:what" component={Echo}/>
             <Route path="greeting" component={Greeting}/>
             <Route path="message" component={Message}/>
           </Route>

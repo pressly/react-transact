@@ -6,7 +6,7 @@ import { always as k, times } from 'ramda'
 const say = taskCreator('ERROR', 'ECHO', (what, n) => times(k(what), n).join(' '))
 
 @transact.route(
-  { params: ['what'], query: ['times'] },
+  { params: ['what'], query: ['times'], defaults: { times: '3' } },
   (state, props) => say(props.what, Number(props.times))
 )
 @connect(state => ({
