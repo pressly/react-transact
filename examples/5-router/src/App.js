@@ -18,7 +18,7 @@ export default class App extends Component {
             <Link activeClassName="active" onlyActiveOnIndex={true} to={`/${startingColor}`}>Colors</Link>
           </li>
           <li style={itemStyle}>
-            <Link activeClassName="active" onlyActiveOnIndex={true} to={`/${startingColor}/echo/buffalo/3`}>Echo</Link>
+            <Link activeClassName="active" onlyActiveOnIndex={true} to={`/${startingColor}/echo/buffalo?times=3`}>Echo</Link>
           </li>
           <li style={itemStyle}>
             <Link activeClassName="active" onlyActiveOnIndex={true} to={`/${startingColor}/greeting`}>Greeting</Link>

@@ -8,8 +8,7 @@ const React = require('react')
 const test = require('tape')
 const sinon = require('sinon')
 const RunContext = require('../../lib/components/RunContext').default
-const transact = require('../../lib/components/transact').default
-const route = require('../../lib/components/route').default
+const transact = require('../../lib/decorators/transact').default
 const Task = require('../../lib/internals/Task').default
 const taskCreator = require('../../lib/internals/taskCreator').default
 const install = require('../../lib/install').default
@@ -126,10 +125,10 @@ test('RunContext with transact decorator', (t) => {
     // Commits the resulting action from here first.
     commit(
       Task.resolve({ type: MESSAGE, payload: 'Bye' })
-      .map(({ payload: x, type }) => ({ type, payload: `${x} Alice` }))
+        .map(({ payload: x, type }) => ({ type, payload: `${x} Alice` }))
     )
     // Then the resulting action from here will commit as well.
-    .map(({ payload: x, type }) => ({ type, payload: `${x}!` }))
+      .map(({ payload: x, type }) => ({ type, payload: `${x}!` }))
   ], { onMount: true })(
     () => null
   )
@@ -208,66 +207,6 @@ test('transact decorator (warnings)', (t) => {
 
   warn.restore()
   t.end()
-})
-
-test('route decorator', (t) => {
-  const resolve = sinon.spy()
-  const Empty = () => h('p')
-
-  const Wrapped = route('what', (state, props) =>
-    Task.resolve({ type: MESSAGE, payload: props.what })
-  )(Empty)
-
-  const m = install()
-  const store = makeStore({
-    history: [],
-    message: ''
-  }, m)
-
-  class SUT extends React.Component {
-
-    render() {
-      // Simulated route params
-      const params = { what: this.props.what }
-      return (
-        h('div', { children:
-          h(Provider, { store, children:
-            h(RunContext, { params, children:
-              h(Wrapped, {
-                params,
-                transact: { resolve }
-              })
-            })
-          })
-        })
-      )
-    }
-  }
-
-  const wrapper = mount(h(SUT, { what: 'hello' }))
-
-  m.done.then(() => {
-    t.deepEqual(store.getState(), {
-      message: 'hello',
-      history: [
-        { type: 'MESSAGE', payload: 'hello' }
-      ]
-    }, 'dispatches tasks mapped by route params')
-
-    wrapper.setProps({ what: 'bye' })
-
-    // Bumping to next tick to allow tasks to complete.
-    setTimeout(() => {
-      t.deepEqual(store.getState(), {
-        message: 'bye',
-        history: [
-          { type: 'MESSAGE', payload: 'hello' },
-          { type: 'MESSAGE', payload: 'bye' }
-        ]
-      }, 'dispatches tasks mapped by route params')
-      t.end()
-    }, 10)
-  })
 })
 
 // Test helpers

@@ -3,10 +3,15 @@ import transact from './transact'
 import { invariant, getDisplayName, shallowEqual } from '../internals/helpers'
 import { IMapTasks } from "../interfaces";
 
-const toParamProps = (paramNames, props) =>
-  paramNames.reduce((acc, name) =>
-    Object.assign(acc, { [name]: props.params[name] })
-  , {})
+const toProps = (paramNames, queryNames, props) =>
+  Object.assign(
+    queryNames.reduce((acc, name) =>
+        Object.assign(acc, { [name]: props.query[name] })
+      , {}),
+    paramNames.reduce((acc, name) =>
+        Object.assign(acc, { [name]: props.params[name] })
+      , {})
+  )
 
 type IProps = {
   transact: any
@@ -14,22 +19,34 @@ type IProps = {
 }
 
 type IState = {
-  paramProps: Array<string>
+  routeProps: Array<string>
 }
 
-export default (first: string|IMapTasks, ...rest: Array<string|IMapTasks>): IMapTasks => {
-  let mapper: IMapTasks
+type RouteDescriptor = {
+  params?: Array<string>
+  query?: Array<string>
+}
+
+/*
+ * The @transact.route decorator is used to decorate a router handler to resolve tasks
+ * based on the declared params and query props.
+ *
+ * When the param or query values change, the decorated route handler will resolve its
+ * tasks again.
+ */
+export default (first: RouteDescriptor | Array<string>, mapper: IMapTasks): IMapTasks => {
   let paramNames: Array<string>
-  
+  let queryNames: Array<string>
+
   // Task mapper is either the first and only argument, or it is the last.
-  if (typeof first === 'function') {
-    mapper = first
-    paramNames = []
+  if (first instanceof Array) {
+    paramNames = first
+    queryNames = []
   } else {
-    mapper = rest[rest.length - 1] as IMapTasks
-    paramNames = [first].concat((rest as Array<string>).slice(0, rest.length - 1))
+    paramNames = first.params || []
+    queryNames = first.query || []
   }
-  
+
   invariant(
     typeof mapper === 'function',
     '@transact.router called without a task mapper function as the last argument'
@@ -45,7 +62,7 @@ export default (first: string|IMapTasks, ...rest: Array<string|IMapTasks>): IMap
     class Wrapped extends React.Component<IProps,IState> {
       static displayName = `TransactRoute(${getDisplayName(Wrappee)})`
 
-      static _mapTasks = (state, props, commit) => mapper(state, toParamProps(paramNames, props), commit)
+      static _mapTasks = (state, props, commit) => mapper(state, toProps(paramNames, queryNames, props), commit)
 
       static contextTypes = {
         router: React.PropTypes.any,
@@ -59,14 +76,15 @@ export default (first: string|IMapTasks, ...rest: Array<string|IMapTasks>): IMap
       constructor(props, context) {
         super(props, context)
         this.state = {
-          paramProps: toParamProps(paramNames, props)
+          routeProps: toProps(paramNames, queryNames, props)
         }
       }
 
       componentWillReceiveProps(nextProps) {
-        const nextParamProps = toParamProps(paramNames, nextProps)
-        if (!shallowEqual(this.state.paramProps, nextParamProps)) {
-          this.setState({ paramProps: nextParamProps }, () => {
+        const nextParamProps = toProps(paramNames, queryNames, nextProps)
+        if (!shallowEqual(this.state.routeProps, nextParamProps)) {
+          // Set the state, then call the @transact component to resolve its tasks again.
+          this.setState({ routeProps: nextParamProps }, () => {
             this._inner.forceResolve()
           })
         }
@@ -78,7 +96,7 @@ export default (first: string|IMapTasks, ...rest: Array<string|IMapTasks>): IMap
           Object.assign({
             ref: r => this._inner = r,
             children: this.props.children
-          }, this.state.paramProps)
+          }, this.state.routeProps)
         )
       }
     }

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { IMapTasks, IDecoratorOptions, MapperWithProps, IResolveOptions } from './../interfaces'
+import { IMapTasks, IDecoratorOptions, MapperWithProps, IResolveOptions } from '../interfaces'
 import { invariant, getDisplayName } from '../internals/helpers'
 
 type ITransact = {
