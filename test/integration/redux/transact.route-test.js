@@ -1,4 +1,4 @@
-require('./../setup')
+require('./../../setup')
 const mount = require('enzyme').mount
 const applyMiddleware = require('redux').applyMiddleware
 const createStore = require('redux').createStore
@@ -6,16 +6,16 @@ const Provider = require('react-redux').Provider
 const React = require('react')
 const test = require('tape')
 const sinon = require('sinon')
-const RunContext = require('../../lib/components/RunContext').default
-const route = require('../../lib/decorators/route').default
-const Task = require('../../lib/internals/Task').default
-const taskCreator = require('../../lib/internals/taskCreator').default
-const install = require('../../lib/install').default
+const ReduxTransactContext = require('../../../lib/adapters/redux/ReduxTransactContext').default
+const route = require('../../../lib/decorators/route').default
+const Task = require('../../../lib/internals/Task').default
+const taskCreator = require('../../../lib/internals/taskCreator').default
+const reduxMiddleware = require('../../../lib/adapters/redux/middleware').default
 
 const h = React.createElement
 
 test('route decorator - with declarative params array', (t) => {
-  const m = install()
+  const m = reduxMiddleware()
   const store = makeStore({
     history: [],
     message: ''
@@ -52,7 +52,7 @@ test('route decorator - with declarative params array', (t) => {
 })
 
 test('route decorator - with route descriptor', (t) => {
-  const m = install()
+  const m = reduxMiddleware()
   const store = makeStore({
     history: [],
     message: ''
@@ -119,7 +119,7 @@ const createRoot = Child => class extends React.Component {
     return (
       h('div', { children:
         h(Provider, { store: this.props.store, children:
-          h(RunContext, { children:
+          h(ReduxTransactContext, { children:
             h(Child, {
               params: this.props.params,
               location: this.props.location,

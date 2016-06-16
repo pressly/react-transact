@@ -1,6 +1,3 @@
-import {MapperWithProps} from "../interfaces";
-import RunContext from '../components/RunContext'
-
 export const invariant = (predicate: boolean, message: string) => {
   if (!predicate) {
     throw new Error(message)

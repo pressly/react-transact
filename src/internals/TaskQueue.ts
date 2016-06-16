@@ -100,7 +100,9 @@ class TaskQueue {
               })
             })
           })
-        }, Promise.resolve([])).then((results: RunResults) => outerResolve(results))
+        }, Promise.resolve([])).then((results: RunResults) => {
+          outerResolve(results)
+        })
       }
     })
 

@@ -70,7 +70,7 @@ export default (first: RouteDescriptor | Array<string>, mapper: IMapTasks): IMap
     class Wrapped extends React.Component<IProps,IState> {
       static displayName = `TransactRoute(${getDisplayName(Wrappee)})`
 
-      static _mapTasks = (state, props, commit) => mapper(state, toProps(paramNames, queryNames, defaults, props), commit)
+      static _mapTasks = (props) => mapper(toProps(paramNames, queryNames, defaults, props))
 
       static contextTypes = {
         router: React.PropTypes.any,

@@ -1,17 +1,12 @@
-require('./../setup')
+require('../setup')
 const mount = require('enzyme').mount
-const applyMiddleware = require('redux').applyMiddleware
-const createStore = require('redux').createStore
-const connect = require('react-redux').connect
-const Provider = require('react-redux').Provider
 const React = require('react')
 const test = require('tape')
 const sinon = require('sinon')
-const RunContext = require('../../lib/components/RunContext').default
+const TransactContext = require('../../lib/components/TransactContext').default
 const transact = require('../../lib/decorators/transact').default
 const Task = require('../../lib/internals/Task').default
 const taskCreator = require('../../lib/internals/taskCreator').default
-const reduxMiddleware = require('../../lib/adapters/redux/middleware').default
 
 const h = React.createElement
 const noop = () => {}
@@ -44,7 +39,7 @@ test('transact decorator (empty)', (t) => {
         name: 'Alice'
       })
     )
-  }, /RunContext/, 'transact must be present in context')
+  }, /TransactContext/, 'transact must be present in context')
 
   t.end()
 })
@@ -93,78 +88,64 @@ test('transact decorator (run on mount)', (t) => {
   t.end()
 })
 
-/*
- * This test covers all of the basic usages of @transact decorator. It is pretty long,
- * but is more of a journey test than integration. :)
- */
-test('RunContext with transact decorator', (t) => {
-  const m = reduxMiddleware()
-  const store = makeStore({
-    history: [],
-    message: ''
-  }, m)
-  const Message = ({ message }) => h('p', {}, [ message ])
+const effect = (fn) => new Task((__, res) => fn(res))
+
+test('TransactContext with transact decorator', (t) => {
+  const Message = ({ message }) => {
+    return h('p', {}, [ message ])
+  }
 
   const Wrapped = transact(
-    (props) => [
-      Task.resolve({ type: MESSAGE, payload: 'Hello Alice!' }),
-      // Delayed task should still resolve in order
-      taskCreator(ERROR, MESSAGE, () => new Promise((res, rej) => {
-        setTimeout(() => {
-          rej('Boo-urns')
-        }, 10)
-      }))()
-    ]
-  )(
-    connect((state) => ({ message: state.message }))(
-      Message
-    )
-  )
-
-  // This component will not be mounted until `showSecondWrappedElement` is set to true.
-  const WrappedRunOnMount = transact((props) => [
-    Task.resolve({ type: MESSAGE, payload: 'Bye Alice' })
-  ], { onMount: true })(
-    () => null
-  )
+    (props) => {
+      return  [
+        effect((next) => {
+          props.onMessageChange('Hello Alice!')
+          next()
+        }),
+        effect((next) => {
+          setTimeout(() => {
+            props.onMessageChange('Bye Alice!')
+            next()
+          }, 10)
+        })
+      ]
+    }
+  )(Message)
 
   class Root extends React.Component {
     constructor(props) {
       super(props)
-      this.state = { showSecondWrappedElement: false }
+      this.state = { message: '' }
+      this.messages = []
     }
-    componentDidMount() {
-      this.setState({ showSecondWrappedElement: true })
+    onMessageChange(message) {
+      this.messages.push(message)
+      this.setState({ message })
     }
     render() {
       return (
-        h(Provider, { store },
-          h(RunContext, {},
-            h('div', { children: [
-              h(Wrapped),
-              this.state.showSecondWrappedElement ? h(WrappedRunOnMount) : null
-            ]})
-          )
+        h(TransactContext, { onReady: () => {
+            t.deepEqual(this.messages, [
+              'Hello Alice!',
+              'Bye Alice!'
+            ], 'receives both messages')
+
+            t.equal(wrapped.text(), 'Bye Alice!', 'text shows results of last dispatched action')
+
+            t.end()
+          } },
+          h('div', { children: [
+            h(Wrapped, {
+              message: this.state.message,
+              onMessageChange: this.onMessageChange.bind(this)
+            })
+          ]})
         )
       )
     }
   }
 
-  const element = h(Root)
-
-  const wrapped = mount(element)
-
-  m.done.then(() => {
-    t.deepEqual(store.getState().history, [
-      { type: MESSAGE, payload: 'Hello Alice!' },
-      { type: ERROR, payload: 'Boo-urns' },
-      { type: MESSAGE, payload: 'Bye Alice' }
-    ], 'actions are dispatched in order')
-
-    t.equal(wrapped.text(), 'Bye Alice', 'text shows results of last dispatched action')
-
-    t.end()
-  })
+  const wrapped = mount(h(Root))
 })
 
 test('transact decorator (warnings)', (t) => {
@@ -178,7 +159,7 @@ test('transact decorator (warnings)', (t) => {
       return { router: {} }
     }
     render() {
-      return h(RunContext, { store }, this.props.children)
+      return h(TransactContext, { store }, this.props.children)
     }
   }
   FakeRouterContext.childContextTypes = {

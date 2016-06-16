@@ -33,11 +33,6 @@ export interface IMapTasks {
   (props: any): Array<ITask<any,any>> | ITask<any,any>
 }
 
-export type MapperWithProps = {
-  props: any,
-  mapper: IMapTasks
-}
-
 export type ITaskResult<A,B> = {
   task: ITask<A,B>
   result: A | B

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {IMapTasks, IDecoratorOptions, MapperWithProps, IResolveOptions, ITask} from '../interfaces'
+import {IMapTasks, IDecoratorOptions, IResolveOptions, ITask} from '../interfaces'
 import { invariant, getDisplayName } from '../internals/helpers'
 
 type ITransact = {
@@ -36,7 +36,7 @@ export default (mapTasks: IMapTasks, opts: IDecoratorOptions = defaultOpts): Fun
 
         invariant(
           this.transact !== null && this.transact !== undefined,
-          'Cannot find `transact` from context or props. Perhaps you forgot to mount `RunContext` as a parent?'
+          'Cannot find `transact` from context or props. Perhaps you forgot to mount `TransactContext` as a parent?'
         )
 
         if (typeof mapTasks === 'function') {

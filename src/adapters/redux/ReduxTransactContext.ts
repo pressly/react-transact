@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { MapperWithProps, IStore, IResolveOptions, ITask } from '../interfaces'
-import {SCHEDULE_TASKS, RUN_SCHEDULED_TASKS, STANDALONE_INIT} from '../actions'
+import { IStore, IResolveOptions, ITask } from '../../interfaces'
+import {SCHEDULE_TASKS, RUN_SCHEDULED_TASKS, STANDALONE_INIT} from '../../actions'
 
 const defaultResolveOpts = {
   immediate: false
@@ -8,8 +8,8 @@ const defaultResolveOpts = {
 
 const { any, func, object, shape } = React.PropTypes
 
-export default class RunContext extends React.Component<any,any> {
-  static displayName = 'RunContext'
+export default class ReduxTransactContext extends React.Component<any,any> {
+  static displayName = 'ReduxTransactContext'
   static contextTypes = {
     store: object
   }

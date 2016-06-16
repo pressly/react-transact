@@ -2,7 +2,7 @@ import Task from './internals/Task'
 import route from './decorators/route'
 import _transact from './decorators/transact'
 import taskCreator from './internals/taskCreator'
-import RunContext from './components/RunContext'
+import ReduxTransactContext from './adapters/redux/ReduxTransactContext'
 import middleware from './adapters/redux/middleware'
 import {RUN_SCHEDULED_TASKS, SCHEDULE_TASKS, STANDALONE_INIT, SCHEDULED_TASKS_PENDING, SCHEDULED_TASKS_COMPLETED} from './actions'
 
@@ -19,7 +19,7 @@ export {
   route,
   taskCreator,
   Task,
-  RunContext,
+  ReduxTransactContext,
   middleware as reduxTransact
 }
 
@@ -33,6 +33,6 @@ export default {
   route,
   taskCreator,
   Task,
-  RunContext,
+  ReduxTransactContext,
   reduxTransact: middleware
 }
