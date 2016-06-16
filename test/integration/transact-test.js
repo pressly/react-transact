@@ -11,7 +11,7 @@ const RunContext = require('../../lib/components/RunContext').default
 const transact = require('../../lib/decorators/transact').default
 const Task = require('../../lib/internals/Task').default
 const taskCreator = require('../../lib/internals/taskCreator').default
-const install = require('../../lib/install').default
+const reduxMiddleware = require('../../lib/adapters/redux/middleware').default
 
 const h = React.createElement
 const noop = () => {}
@@ -52,11 +52,11 @@ test('transact decorator (empty)', (t) => {
 test('transact decorator (with tasks)', (t) => {
   const resolve = sinon.spy()
   const Empty = () => h('p')
-  const mapTasks = (state, props) => [
+  const tasks = [
     Task.resolve({ type: 'GOOD', payload: 42 })
   ]
 
-  const Wrapped = transact(mapTasks)(Empty)
+  const Wrapped = transact(() => tasks)(Empty)
 
   mount(
     h('div', { children: [
@@ -66,8 +66,8 @@ test('transact decorator (with tasks)', (t) => {
   )
 
   t.equal(resolve.callCount, 2, 'calls resolve for each @transact component')
-  t.equal(resolve.firstCall.args[0].mapper, mapTasks, 'calls resolve with task run mapper')
-  t.equal(resolve.secondCall.args[0].mapper, mapTasks, 'calls resolve with task run mapper')
+  t.equal(resolve.firstCall.args[0], tasks, 'calls resolve with task run mapper')
+  t.equal(resolve.secondCall.args[0], tasks, 'calls resolve with task run mapper')
 
   t.end()
 })
@@ -75,11 +75,11 @@ test('transact decorator (with tasks)', (t) => {
 test('transact decorator (run on mount)', (t) => {
   const resolve = sinon.spy()
   const Empty = () => h('p')
-  const mapTasks = (state, props) => [
+  const tasks = [
     Task.resolve({ type: 'GOOD', payload: 42 })
   ]
 
-  const Wrapped = transact(mapTasks, { onMount: true })(Empty)
+  const Wrapped = transact(() => tasks, { onMount: true })(Empty)
 
   mount(
     h('div', { children: [
@@ -87,7 +87,7 @@ test('transact decorator (run on mount)', (t) => {
     ]})
   )
 
-  t.equal(resolve.firstCall.args[0].mapper, mapTasks, 'calls resolve with task run mapper')
+  t.equal(resolve.firstCall.args[0], tasks, 'calls resolve with task run mapper')
   t.deepEqual(resolve.firstCall.args[1], { immediate: true }, 'enables immediate flag')
 
   t.end()
@@ -98,7 +98,7 @@ test('transact decorator (run on mount)', (t) => {
  * but is more of a journey test than integration. :)
  */
 test('RunContext with transact decorator', (t) => {
-  const m = install()
+  const m = reduxMiddleware()
   const store = makeStore({
     history: [],
     message: ''
@@ -106,8 +106,9 @@ test('RunContext with transact decorator', (t) => {
   const Message = ({ message }) => h('p', {}, [ message ])
 
   const Wrapped = transact(
-    (state, props) => [
+    (props) => [
       Task.resolve({ type: MESSAGE, payload: 'Hello Alice!' }),
+      // Delayed task should still resolve in order
       taskCreator(ERROR, MESSAGE, () => new Promise((res, rej) => {
         setTimeout(() => {
           rej('Boo-urns')
@@ -121,14 +122,8 @@ test('RunContext with transact decorator', (t) => {
   )
 
   // This component will not be mounted until `showSecondWrappedElement` is set to true.
-  const WrappedRunOnMount = transact((state, props, commit) => [
-    // Commits the resulting action from here first.
-    commit(
-      Task.resolve({ type: MESSAGE, payload: 'Bye' })
-        .map(({ payload: x, type }) => ({ type, payload: `${x} Alice` }))
-    )
-    // Then the resulting action from here will commit as well.
-      .map(({ payload: x, type }) => ({ type, payload: `${x}!` }))
+  const WrappedRunOnMount = transact((props) => [
+    Task.resolve({ type: MESSAGE, payload: 'Bye Alice' })
   ], { onMount: true })(
     () => null
   )
@@ -163,11 +158,10 @@ test('RunContext with transact decorator', (t) => {
     t.deepEqual(store.getState().history, [
       { type: MESSAGE, payload: 'Hello Alice!' },
       { type: ERROR, payload: 'Boo-urns' },
-      { type: MESSAGE, payload: 'Bye Alice' },
-      { type: MESSAGE, payload: 'Bye Alice!' }
+      { type: MESSAGE, payload: 'Bye Alice' }
     ], 'actions are dispatched in order')
 
-    t.equal(wrapped.text(), 'Bye Alice!', 'text shows results of last dispatched action')
+    t.equal(wrapped.text(), 'Bye Alice', 'text shows results of last dispatched action')
 
     t.end()
   })

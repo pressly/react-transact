@@ -1,8 +1,8 @@
-import {IStore, IAction, IMapTasks} from "./interfaces"
-import {RUN_SCHEDULED_TASKS, SCHEDULE_TASKS, SCHEDULED_TASKS_PENDING, SCHEDULED_TASKS_COMPLETED} from './actions'
-import TaskQueue from './internals/TaskQueue'
-import {getTaskMappers} from './internals/helpers'
-import Task from './internals/Task'
+import {IStore, IAction, IMapTasks} from "../../interfaces"
+import {RUN_SCHEDULED_TASKS, SCHEDULE_TASKS, SCHEDULED_TASKS_PENDING, SCHEDULED_TASKS_COMPLETED} from '../../actions'
+import TaskQueue from '../../internals/TaskQueue'
+import {getTaskMappers} from '../../internals/helpers'
+import Task from '../../internals/Task'
 
 type IRouterProps = {
   components: any[]
@@ -24,21 +24,22 @@ const makeMiddleware = (routerProps: IRouterProps) => {
       // After store is created, run initial tasks, if any.
       setTimeout(() => {
         mappers.forEach((mapper: IMapTasks) => {
-          store.dispatch({ type: SCHEDULE_TASKS, payload: { mapper, props: routerProps } })
+          store.dispatch({ type: SCHEDULE_TASKS, payload: mapper(routerProps) })
         })
         store.dispatch({ type: RUN_SCHEDULED_TASKS })
       }, 0)
     }
 
-    return (next: Function) => (action: IAction<any>|Task<any,any>) => {
+    return (next: Function) => (action: IAction<any> | Task<any,any>) => {
       // If a task is returned, then schedule and run it.
       // TODO: Should come up with a better abstraction for Task vs action dispatches
       //       so that we don't need to fork the code like this with a duplicated resolve call.
       if (action instanceof Task) {
-        queue.push({ mapper: () => [action], props: {}})
+        queue.push(action)
+        // queue.push({ mapper: () => [action], props: {}})
         setTimeout(() => store.dispatch({ type: SCHEDULED_TASKS_PENDING }))
         queue
-          .run(store.dispatch, store.getState())
+          .run(store.dispatch)
           .then((results) => {
             _res(results)
             setTimeout(() => store.dispatch({ type: SCHEDULED_TASKS_COMPLETED, payload: { results } }))
@@ -56,7 +57,8 @@ const makeMiddleware = (routerProps: IRouterProps) => {
             }
             pendingCount = pendingCount + 1
             queue
-              .run(store.dispatch, store.getState())
+              .run(store.dispatch)
+              // .run(store.dispatch, store.getState())
               .then((results) => {
                 pendingCount = pendingCount - 1
                 if (pendingCount === 0) {

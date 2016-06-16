@@ -4,120 +4,98 @@ const Task = require('../../../lib/internals/Task').default
 const TaskQueue = require('../../../lib/internals/TaskQueue').default
 
 test('TaskQueue', (t) => {
-  t.plan(4)
-
-  const dispatch = sinon.spy()
+  const onResult = sinon.spy()
   const queue = new TaskQueue()
 
-  queue.push({
-    mapper: (state, props) => [
-      Task.resolve({ type: 'GOOD', payload: `${props.type} ${state.name}!` }),
-      Task.reject({ type: 'BAD', payload: 'Bye!' })
-    ],
-    props: { type: 'Hello' }
-  })
+  queue.push([
+    Task.resolve({ type: 'GOOD', payload: 'Hello Alice!' }),
+    Task.reject({ type: 'BAD', payload: 'Hello Bob!' })
+  ])
 
-  queue.push({
-    mapper: (state, props) => [
-      Task.resolve({ type: 'GOOD', payload: `${state.name} says "${props.type}!"` })
-    ],
-    props: { type: 'Hello' }
-  })
+  queue.push(Task.reject({ type: 'BAD', payload: 'Bye!' }))
 
-  queue.run(dispatch, { name: 'Alice' }).then(() => {
-    t.equal(dispatch.callCount, 3)
+  queue.run(onResult).then(() => {
+    t.equal(onResult.callCount, 3)
 
-    t.deepEqual(dispatch.firstCall.args[0], {
+    t.deepEqual(onResult.firstCall.args[0], {
       type: 'GOOD',
       payload: 'Hello Alice!'
     })
 
-    t.deepEqual(dispatch.secondCall.args[0], {
+    t.deepEqual(onResult.secondCall.args[0], {
+      type: 'BAD',
+      payload: 'Hello Bob!'
+    })
+
+    t.deepEqual(onResult.thirdCall.args[0], {
       type: 'BAD',
       payload: 'Bye!'
     })
 
-    t.deepEqual(dispatch.thirdCall.args[0], {
-      type: 'GOOD',
-      payload: 'Alice says "Hello!"'
-    })
+    t.end()
   })
 })
 
 test('TaskQueue#run (completion)', (t) => {
   t.plan(11)
 
-  const dispatch = sinon.spy()
+  const onResult = sinon.spy()
   const queue = new TaskQueue()
 
-  queue.push({
-    mapper: (state, props) => [
-      Task.resolve({ type: 'GOOD', payload: `${state.name} says "${props.type}!"` })
-    ],
-    props: { type: 'Hello' }
-  })
+  queue.push(Task.resolve({ type: 'GOOD', payload: 'Alice says "Hello!"'}))
 
-  const p = queue.run(dispatch, { name: 'Alice' })
+  const p = queue.run(onResult)
 
   t.ok(typeof p.then === 'function', 'returns a promise')
 
   p.then((results) => {
     t.ok(true, 'resolves promise on computation completion')
     t.equal(queue.size, 0, 'removes successfully completed tasks')
-    t.deepEqual(dispatch.firstCall.args[0], {
+    t.deepEqual(onResult.firstCall.args[0], {
       type: 'GOOD', payload: 'Alice says "Hello!"'
     })
     t.equal(results.length, 1, 'returns results of tasks run')
-    t.deepEqual(results[0].action, {
+    t.deepEqual(results[0].result, {
       type: 'GOOD', payload: 'Alice says "Hello!"'
-    }, 'action is returned')
+    }, 'result is returned')
   })
 
-  queue.push({
-    mapper: (state, props) => [
-      new Task((rej, res, progress) => {
-        progress({ type: 'PROGRESS' })
-        res({ type: 'GOOD', payload: `${state.name} says "${props.type}!"` })
-      })
-    ],
-    props: { type: 'Bye' }
-  })
+  queue.push(
+    new Task((rej, res, progress) => {
+      progress({ type: 'PROGRESS' })
+      res({ type: 'GOOD', payload: 'Alice says "Bye!"' })
+    })
+  )
 
-  const p2 = queue.run(dispatch, { name: 'Bob' })
+  const p2 = queue.run(onResult)
 
   p2.then(() => {
-    t.equal(dispatch.callCount, 3, 'maintains total ordering (first run completes before second)')
-    t.deepEqual(dispatch.secondCall.args[0], {
+    t.equal(onResult.callCount, 3, 'maintains total ordering (first run completes before second)')
+    t.deepEqual(onResult.secondCall.args[0], {
       type: 'PROGRESS'
     })
-    t.deepEqual(dispatch.thirdCall.args[0], {
-      type: 'GOOD', payload: 'Bob says "Bye!"'
+    t.deepEqual(onResult.thirdCall.args[0], {
+      type: 'GOOD', payload: 'Alice says "Bye!"'
     })
   })
 
-  const p3 = queue.run(dispatch, null)
+  const p3 = queue.run(onResult)
 
   p3.then(() => {
-    t.equal(dispatch.callCount, 3, 'resolves promise when no computations are queued')
+    t.equal(onResult.callCount, 3, 'resolves promise when no computations are queued')
   })
 
-  queue.push({
-    mapper: (state, props) => [
-      null,
-      undefined
-    ],
-    props: {}
-  })
+  queue.push([null, undefined])
 
-  const p4 = queue.run(dispatch, null)
+  const p4 = queue.run(onResult)
 
   p4.then(() => {
-    t.equal(dispatch.callCount, 3, 'resolves promise when mapped tasks are nil')
+    t.equal(onResult.callCount, 3, 'resolves promise when tasks are nil')
   })
 })
 
 test('Task#run (ordering)', (t) => {
-  const dispatch = sinon.spy()
+  const onResult = sinon.spy()
   const queue = new TaskQueue()
   const message = (msg) =>
     new Task((rej, res) => {
@@ -133,57 +111,37 @@ test('Task#run (ordering)', (t) => {
       }, Math.random() * 100)
     })
 
-  queue.push({
-    mapper: () => [
-      message('Hey')
-    ],
-    props: {}
-  })
+  queue.push(message('Hey'))
 
-  queue.push({
-    mapper: () => [
-      message('Hello')
-    ],
-    props: {}
-  })
+  queue.push(message('Hello'))
 
   // Run in the middle before queuing additional tasks.
   // Need to ensure that we still maintain ordering even across multiple runs.
-  queue.run(dispatch)
+  queue.run(onResult)
 
-  queue.push({
-    mapper: () => [
-      error('Oops')
-    ],
-    props: {}
-  })
+  queue.push(error('Oops'))
 
-  queue.push({
-    mapper: () => [
-      message('Bye')
-    ],
-    props: {}
-  })
+  queue.push(message('Bye'))
 
-  queue.run(dispatch, {}).then(() => {
-    t.equal(dispatch.callCount, 4, 'dispatched all actions')
+  queue.run(onResult).then(() => {
+    t.equal(onResult.callCount, 4, 'dispatched all actions')
 
-    t.deepEqual(dispatch.firstCall.args[0], {
+    t.deepEqual(onResult.firstCall.args[0], {
       type: 'MESSAGE',
       payload: 'Hey'
     }, 'correctly dispatches first action')
 
-    t.deepEqual(dispatch.secondCall.args[0], {
+    t.deepEqual(onResult.secondCall.args[0], {
       type: 'MESSAGE',
       payload: 'Hello'
     }, 'correctly dispatches second action')
 
-    t.deepEqual(dispatch.thirdCall.args[0], {
+    t.deepEqual(onResult.thirdCall.args[0], {
       type: 'ERROR',
       payload: 'Oops'
     }, 'correctly dispatches third action')
 
-    t.deepEqual(dispatch.getCall(3).args[0], {
+    t.deepEqual(onResult.getCall(3).args[0], {
       type: 'MESSAGE',
       payload: 'Bye'
     }, 'correctly dispatches last action')

@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { MapperWithProps, IStore, IResolveOptions, ITask } from '../interfaces'
-import ComponentStateStore from '../internals/ComponentStateStore'
 import {SCHEDULE_TASKS, RUN_SCHEDULED_TASKS, STANDALONE_INIT} from '../actions'
 
 const defaultResolveOpts = {
@@ -32,21 +31,7 @@ export default class RunContext extends React.Component<any,any> {
     super(props, context)
 
     // Using store from redux
-    if (typeof props.stateReducer === 'undefined') {
-      this.store = context.store || props.store
-      this.state = {}
-    // Using a standalone store
-    } else {
-      const getState = () => this.state
-      this.state = props.stateReducer(this.state, STANDALONE_INIT)
-      this.store = ComponentStateStore(
-        props.stateReducer,
-        getState,
-        (state) => {
-          setTimeout(() => this.setState(state), 0)
-        }
-      )
-    }
+    this.store = context.store || props.store
 
     setTimeout(() => this.runTasks(), 0)
   }
@@ -65,8 +50,8 @@ export default class RunContext extends React.Component<any,any> {
     setTimeout(() => this.runTasks(), 0)
   }
 
-  resolve(mapTaskRuns: MapperWithProps, opts: IResolveOptions = defaultResolveOpts): void {
-    this.store.dispatch({ type: SCHEDULE_TASKS, payload: mapTaskRuns })
+  resolve(tasks: Array<ITask<any,any>> | ITask<any,any>, opts: IResolveOptions = defaultResolveOpts): void {
+    this.store.dispatch({ type: SCHEDULE_TASKS, payload: tasks })
     if (opts.immediate) {
       // Bump to next tick to avoid synchronous component render issue.
       setTimeout(() => this.runTasks())
@@ -76,7 +61,7 @@ export default class RunContext extends React.Component<any,any> {
   run(tasks: Array<ITask<any,any>> | ITask<any,any>, props: any): void {
     this.store.dispatch({
       type: SCHEDULE_TASKS,
-      payload: { mapper: () => tasks, props }
+      payload: tasks
     })
     this.runTasks()
   }

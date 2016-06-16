@@ -17,6 +17,10 @@ export interface ITask<A,B> {
   chain<A2,B2>(g: (arg: any) => ITask<A2,B2>): ITask<A|A2,B2>
 }
 
+export interface ITransaction {
+  tasks: Array<ITask<any,any>>
+}
+
 export interface IChainTask<A,B,C,D> {
   (x: IAction<A|B>): ITask<C,D>
 }
@@ -26,7 +30,7 @@ export interface ITaskCreator<A,B> {
 }
 
 export interface IMapTasks {
-  (state: any, props: any, commit: (x: any) => ITask<any,any>): Array<ITask<any,any>> | ITask<any,any>
+  (props: any): Array<ITask<any,any>> | ITask<any,any>
 }
 
 export type MapperWithProps = {
@@ -34,10 +38,10 @@ export type MapperWithProps = {
   mapper: IMapTasks
 }
 
-export type ITaskResult = {
-  task: ITask<any,any>
-  action: IAction<any>
-  rejected: boolean
+export type ITaskResult<A,B> = {
+  task: ITask<A,B>
+  result: A | B
+  isRejected: boolean
 }
 
 export interface IStore {

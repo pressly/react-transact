@@ -21,7 +21,7 @@ test('route decorator - with declarative params array', (t) => {
     message: ''
   }, m)
 
-  const SUT = route(['what'], (state, props) =>
+  const SUT = route(['what'], (props) =>
     Task.resolve({ type: MESSAGE, payload: props.what })
   )(() => h('p'))
 
@@ -62,7 +62,7 @@ test('route decorator - with route descriptor', (t) => {
     params: ['what'],
     query: ['who'],
     defaults: { what: 'Hey', who: 'Alice' }
-  }, (state, { what, who }) =>
+  }, ({ what, who }) =>
     Task.resolve({ type: MESSAGE, payload: `${what} ${who}` })
   )(() => h('p'))
 

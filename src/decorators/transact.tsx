@@ -1,10 +1,10 @@
 import * as React from 'react'
-import { IMapTasks, IDecoratorOptions, MapperWithProps, IResolveOptions } from '../interfaces'
+import {IMapTasks, IDecoratorOptions, MapperWithProps, IResolveOptions, ITask} from '../interfaces'
 import { invariant, getDisplayName } from '../internals/helpers'
 
 type ITransact = {
-  resolve: (mapper: MapperWithProps, opts: IResolveOptions) => void
-  run: (mapper: MapperWithProps, props: any) => void
+  resolve: (tasks: Array<ITask<any,any>> | ITask<any,any>, opts: IResolveOptions) => void
+  run: (tasks: Array<ITask<any,any>> | ITask<any,any>, props: any) => void
   store: any
 }
 
@@ -40,7 +40,7 @@ export default (mapTasks: IMapTasks, opts: IDecoratorOptions = defaultOpts): Fun
         )
 
         if (typeof mapTasks === 'function') {
-          this.transact.resolve({ props, mapper: mapTasks }, { immediate: opts.onMount })
+          this.transact.resolve(mapTasks(props), { immediate: opts.onMount })
         }
 
         if (typeof mapTasks === 'function' && context.router && !props.routeParams && !opts.onMount) {
@@ -52,10 +52,7 @@ export default (mapTasks: IMapTasks, opts: IDecoratorOptions = defaultOpts): Fun
 
       // Internal helper to force tasks to be resolved.
       forceResolve() {
-        this.transact.resolve({
-          props: this.props,
-          mapper: mapTasks
-        }, { immediate: true })
+        this.transact.resolve(mapTasks(this.props), {immediate: true })
       }
 
       render() {
