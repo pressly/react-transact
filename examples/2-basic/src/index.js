@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import ReactDOM from 'react-dom'
-import { transact, taskCreator, RunContext } from 'react-transact'
+import { transact, call, TransactContext } from 'react-transact'
 
 /*
  * Action types that can be handled in this application.
@@ -24,37 +24,28 @@ const reducer = (state = {}, action) => {
   }
 }
 
-// When called with a message string, causes `MESSAGE_CHANGED` to be dispatched.
-// On error, the `MESSAGE_ERROR` is dispatched.
-const setMessage = taskCreator(
-  MESSAGE_ERROR,
-  MESSAGE_CHANGED,
-  (msg) => {
-    // When we see the substring of 'error', fail this task.
-    if (msg.toUpperCase().indexOf('ERROR') !== -1) {
-      throw new Error(msg)
+const toMessage = (msg) => {
+  // When we see the substring of 'error', fail this task.
+  if (msg.toUpperCase().indexOf('ERROR') !== -1) {
+    throw new Error(msg)
     // Otherwise, succeed with the message.
-    } else {
-      return msg
-    }
+  } else {
+    return msg
   }
-)
+}
 
 // Helper to delay value dispatches. Used in the @transact below.
 export const delay = (ms) => (x) => new Promise((res) => {
   setTimeout(() => res(x), ms)
 })
 
-const welcome = [
-  setMessage('Welcome to the basic example. :)'),
-  setMessage('You can write your own message here.').map(delay(1500)),
-  setMessage('Have fun!').map(delay(3000))
-]
-
 // When this component is mounted, dispatch the actions from the supplied tasks.
-@transact((state, props, commit) => welcome, { onMount: true })
+@transact(({ onMessage }) =>
+  () => onMessage('You can write your own message here.'),
+  { onMount: true })
 class Messenger extends Component {
   render() {
+    const { onMessage, onError } = this.props
     return (
       <div className="messenger">
         <form onSubmit={(evt) => {
@@ -62,12 +53,10 @@ class Messenger extends Component {
           const { run } = this.props.transact
           const { value } = this.refs.input
 
-          if (value.toUpperCase() === 'RESTART') {
-            run(welcome)
-          } else if (value) {
-            run(setMessage(value))
+          if (value) {
+            run(onMessage(value))
           } else {
-            run(setMessage('Hmm, you left the message empty. Was that an error? :('))
+            run(onError('Hmm, you left the message empty. Was that an error? :('))
           }
 
           this.refs.input.value = ''
@@ -76,28 +65,40 @@ class Messenger extends Component {
           <button>Go</button>
         </form>
         <p className="hint">
-          (Psst, try typing "restart" or an empty string "")
+          (Psst, try typing an empty string "")
         </p>
       </div>
     )
   }
 }
 
-const Container = transact()(({ transact }) => {
-  const state = transact.store.getState()
-  return (
-    <div className="container">
-      <div className={state.hasError ? 'error' : ''}>
-        <p className="message"><em>{state.message}</em></p>
-        <Messenger/>
+
+class Container extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { message: '' }
+  }
+  render() {
+    return (
+      <div className="container">
+        <div className={this.state.hasError ? 'error' : ''}>
+          <p className="message"><em>{this.state.message}</em></p>
+          <Messenger
+            onMessage={(message) => {
+              this.setState({ message, hasError: false })
+            }}
+            onError={(message) => {
+              this.setState({ message, hasError: true })
+            }}/>
+        </div>
       </div>
-    </div>
-  )
-})
+    )
+  }
+}
 
 ReactDOM.render(
-  <RunContext stateReducer={reducer}>
+  <TransactContext stateReducer={reducer}>
     <Container/>
-  </RunContext>,
+  </TransactContext>,
   document.getElementById('app')
 )
