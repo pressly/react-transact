@@ -1,1 +1,1 @@
-module.exports = require('./umd/redux').default
+module.exports = require('./umd/redux')

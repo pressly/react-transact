@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { transact, taskCreator } from 'react-transact'
+import { transact } from 'react-transact'
+import { taskCreator } from 'react-transact/redux'
 import { always as k, times } from 'ramda'
 
 const say = taskCreator('ERROR', 'ECHO', (what, n) => times(k(what), n).join(' '))
@@ -11,7 +12,7 @@ const say = taskCreator('ERROR', 'ECHO', (what, n) => times(k(what), n).join(' '
     query: ['times'],
     defaults: { times: '3' }
   },
-  (state, props) => say(props.what, Number(props.times))
+  (props) => say(props.what, Number(props.times))
 )
 @connect(state => ({
   what: state.what

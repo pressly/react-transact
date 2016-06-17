@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { taskCreator } from 'react-transact'
+import { taskCreator } from 'react-transact/redux'
 import { connect } from 'react-redux'
 
 const changeMessage = taskCreator(

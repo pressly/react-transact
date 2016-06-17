@@ -2,7 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
 import { Redirect, Router, Route, IndexRoute, hashHistory } from 'react-router'
-import { RunContext } from 'react-transact'
+import { ReduxTransactContext } from 'react-transact/redux'
 import configureStore from './configureStore'
 import App from './App'
 import Colors from './Colors'
@@ -15,7 +15,7 @@ const store = configureStore({ name: 'World', error: false })
 ReactDOM.render(
   <div style={{ fontSize: '24px', textAlign: 'center' }}>
     <Provider store={store}>
-      <RunContext>
+      <ReduxTransactContext>
         <Router history={hashHistory}>
           <Route path="/:startingColor" component={App}>
             <IndexRoute component={Colors}/>
@@ -25,7 +25,7 @@ ReactDOM.render(
           </Route>
           <Redirect from="*" to="/cyan"/>
         </Router>
-      </RunContext>
+      </ReduxTransactContext>
     </Provider>
   </div>,
   document.getElementById('app')

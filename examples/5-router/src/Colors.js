@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { transact, taskCreator } from 'react-transact'
+import { transact } from 'react-transact'
+import { taskCreator } from 'react-transact/redux'
 import { changeColor } from './tasks'
 
 const delay = (ms) => (x) => new Promise((res) => {
