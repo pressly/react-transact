@@ -1,36 +1,12 @@
+///<reference path="../internals/helpers.ts"/>
 import * as React from 'react'
-import { IResolveOptions, ITask } from '../interfaces'
-import Task from "../internals/Task";
+import {IResolveOptions, TasksOrEffects} from '../interfaces'
 import TaskQueue from "../internals/TaskQueue";
+import {toTasks} from "../internals/helpers";
 
 const defaultResolveOpts = { immediate: false }
 
 const { any, func, object, shape } = React.PropTypes
-
-type Effect = (...args: any[]) => any
-type TasksOrEffects = Array<ITask<any,any> | Effect> | ITask<any,any> | Effect
-
-const toTasks = (x: TasksOrEffects): Array<ITask<any,any>> => {
-  const arr: Array<ITask<any,any> | Effect> = Array.isArray(x) ? x : [x]
-  return arr.map((a) => {
-    if (a instanceof Task) {
-      return a
-    } else if (a instanceof Function) {
-      return new Task((rej, res) => {
-        try {
-          const b = a()
-          if (b && typeof b.then === 'function') {
-            b.then(c => res(c), d => rej(d))
-          } else {
-            res(b)
-          }
-        } catch (e) {
-          rej(e)
-        }
-      })
-    }
-  })
-}
 
 export default class TransactContext extends React.Component<any,any> {
   static displayName = 'TransactContext'
@@ -84,16 +60,16 @@ export default class TransactContext extends React.Component<any,any> {
     }
   }
 
-  resolve(tasksOrEfects: TasksOrEffects, opts: IResolveOptions = defaultResolveOpts): void {
-    this.taskQueue.push(toTasks(tasksOrEfects))
+  resolve(tasksOrEffects: TasksOrEffects, opts: IResolveOptions = defaultResolveOpts): void {
+    this.taskQueue.push(toTasks(tasksOrEffects))
     if (opts.immediate) {
       // Bump to next tick to avoid synchronous component render issue.
       setTimeout(() => this.runTasks())
     }
   }
 
-  run(tasksOrEfects: TasksOrEffects): void {
-    this.taskQueue.push(toTasks(tasksOrEfects))
+  run(tasksOrEffects: TasksOrEffects): void {
+    this.taskQueue.push(toTasks(tasksOrEffects))
     this.runTasks()
   }
 

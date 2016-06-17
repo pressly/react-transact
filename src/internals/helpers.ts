@@ -1,3 +1,7 @@
+import {ITask, TasksOrEffects, IEffect} from "../interfaces";
+import Call from "./Call";
+import Task from "./Task";
+
 export const invariant = (predicate: boolean, message: string) => {
   if (!predicate) {
     throw new Error(message)
@@ -68,4 +72,15 @@ export const flattenComponents = (components: any[]): any[] => {
 export const getTaskMappers = (components: any[]): Function[] => {
   const flattened = flattenComponents(components)
   return flattened.map(c => c._mapTasks).filter(m => typeof m !== 'undefined')
+}
+
+export const toTasks = (x: TasksOrEffects): Array<ITask<any,any>> => {
+  const arr: Array<ITask<any,any> | IEffect<any>> = Array.isArray(x) ? x : [x]
+  return arr.map((a) => {
+    if (a instanceof Task || a instanceof Call) {
+      return a
+    } else if (a instanceof Function) {
+      return new Call(a)
+    }
+  })
 }

@@ -1,6 +1,7 @@
 import Task from './internals/Task'
-import { IActionThunk, IChainTask } from './interfaces'
+import {IActionThunk, IChainTask, IEffect} from './interfaces'
 import { applyValueOrPromise } from './internals/helpers'
+import Call from "./internals/Call";
 
 /*
  * When given a function and a value, returns a new Task that, when forked,
@@ -34,3 +35,5 @@ export const tap = (fn: IActionThunk<any>): IChainTask<any,any,any,any> => (x: a
  * ```
  */
 export const trace = (msg: string): IChainTask<any,any,any,any> => tap((a: any) => console.log(msg, a))
+
+export const call = (fn: IEffect<any>) => new Call(fn)

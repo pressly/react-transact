@@ -88,7 +88,7 @@ test('transact decorator (run on mount)', (t) => {
   t.end()
 })
 
-const effect = (fn) => new Task((__, res) => fn(res))
+const call = (fn) => new Task((__, res) => fn(res))
 
 test('TransactContext with transact decorator', (t) => {
   const Message = ({ message }) => {
@@ -98,16 +98,8 @@ test('TransactContext with transact decorator', (t) => {
   const Wrapped = transact(
     (props) => {
       return  [
-        effect((next) => {
-          props.onMessageChange('Hello Alice!')
-          next()
-        }),
-        effect((next) => {
-          setTimeout(() => {
-            props.onMessageChange('Bye Alice!')
-            next()
-          }, 10)
-        })
+        props.onMessageChange('Hello Alice!'),
+        props.onAsyncMessageChange('Bye Alice!')
       ]
     }
   )(Message)
@@ -121,6 +113,17 @@ test('TransactContext with transact decorator', (t) => {
     onMessageChange(message) {
       this.messages.push(message)
       this.setState({ message })
+      return message
+    }
+    onAsyncMessageChange(message) {
+      return new Promise((res) => {
+        this.messages.push(message)
+        this.setState({ message })
+        // Randomly resolve message within 0-50 ms
+        setTimeout(() => {
+          res(message)
+        }, Math.random() * 50)
+      })
     }
     render() {
       return (
@@ -137,7 +140,8 @@ test('TransactContext with transact decorator', (t) => {
           h('div', { children: [
             h(Wrapped, {
               message: this.state.message,
-              onMessageChange: this.onMessageChange.bind(this)
+              onMessageChange: this.onMessageChange.bind(this),
+              onAsyncMessageChange: this.onAsyncMessageChange.bind(this)
             })
           ]})
         )

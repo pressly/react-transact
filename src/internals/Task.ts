@@ -75,11 +75,6 @@ class Task<A,B> implements ITask<A,B> {
     })
   }
 
-  // Alias for chain
-  then<A2,B2>(g: (arg: any)=> ITask<A2,B2>): ITask<A|A2,B2> {
-    return this.chain(g)
-  }
-
   map(g: (arg: IAction<A|B>)=> any): ITask<A,B> {
     return new Task((rej: IActionThunk<A>, res: IActionThunk<B>) => {
       this.fork(

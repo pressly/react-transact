@@ -12,7 +12,6 @@ export interface IComputation<A,B> {
 }
 
 export interface ITask<A,B> {
-  computation: IComputation<A,B>
   fork(rej: IActionThunk<A|B>, res: IActionThunk<B>, progress?: IActionThunk<any>, cancel?: IActionThunk<any>): void
   chain<A2,B2>(g: (arg: any) => ITask<A2,B2>): ITask<A|A2,B2>
 }
@@ -38,6 +37,10 @@ export type ITaskResult<A,B> = {
   result: A | B
   isRejected: boolean
 }
+
+export type IEffect<T> = (...args: any[]) => Promise<T> | T
+
+export type TasksOrEffects = Array<ITask<any,any> | IEffect<any>> | ITask<any,any> | IEffect<any>
 
 export interface IStore {
   dispatch: (action: IAction<any>) => void
