@@ -104,7 +104,7 @@ export default (first: RouteDescriptor | Array<string>, mapper: IMapTasks): IMap
           Object.assign({
             ref: r => this._inner = r,
             children: this.props.children
-          }, this.state.routeProps)
+          }, Object.assign({}, this.props, this.state.routeProps))
         )
       }
     }
