@@ -8,32 +8,6 @@ import { transact, call, TransactContext } from 'react-transact'
 const MESSAGE_CHANGED = 'MESSAGE_CHANGED'
 const MESSAGE_ERROR = 'MESSAGE_ERROR'
 
-/*
- * This is the state reducer for the `RunContext` component. The local state
- * of `RunContext` will be passed down to `Container` component as props.
- */
-const reducer = (state = {}, action) => {
-  // When the MESSAGE_CHANGED action is dispatched, store its payload on state.
-  switch (action.type) {
-    case MESSAGE_CHANGED:
-      return { message: action.payload, hasError: false }
-    case MESSAGE_ERROR:
-      return { message: action.payload.message, hasError: true }
-    default:
-      return state
-  }
-}
-
-const toMessage = (msg) => {
-  // When we see the substring of 'error', fail this task.
-  if (msg.toUpperCase().indexOf('ERROR') !== -1) {
-    throw new Error(msg)
-    // Otherwise, succeed with the message.
-  } else {
-    return msg
-  }
-}
-
 // Helper to delay value dispatches. Used in the @transact below.
 export const delay = (ms) => (x) => new Promise((res) => {
   setTimeout(() => res(x), ms)
@@ -97,7 +71,7 @@ class Container extends Component {
 }
 
 ReactDOM.render(
-  <TransactContext stateReducer={reducer}>
+  <TransactContext>
     <Container/>
   </TransactContext>,
   document.getElementById('app')
