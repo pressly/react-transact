@@ -63,8 +63,7 @@ export default class TransactContext extends React.Component<any,any> {
   resolve(tasksOrEffects: TasksOrEffects, opts: IResolveOptions = defaultResolveOpts): void {
     this.taskQueue.push(toTasks(tasksOrEffects))
     if (opts.immediate) {
-      // Bump to next tick to avoid synchronous component render issue.
-      setTimeout(() => this.runTasks())
+      this.runTasks()
     }
   }
 
@@ -76,10 +75,11 @@ export default class TransactContext extends React.Component<any,any> {
   runTasks(): void {
     const { onBeforeRun, onAfterRun, onResult } = this.props
     onBeforeRun()
-    this.taskQueue.run(onResult).then(() => {
+    // Bump to next tick to avoid synchronous component render issue.
+    setTimeout(() => this.taskQueue.run(onResult).then(() => {
       onAfterRun()
       this.ready()
-    })
+    }))
   }
 
   render() {

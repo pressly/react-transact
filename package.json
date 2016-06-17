@@ -11,16 +11,19 @@
     "umd",
     "lib",
     "index.js",
+    "redux.js",
+    "effects.js",
     "router.js",
     "LICENSE",
     "README.md"
   ],
   "scripts": {
     "clean": "rm -rf lib umd",
-    "build": "npm run clean && npm run compile:ts && npm run compile:es6",
+    "build": "npm run clean && npm run compile:ts && npm run compile:core && npm run compile:redux",
     "release": "npm test && npm run build && xyz --repo git@github.com:pressly/react-transact.git",
     "compile:ts": "tsc",
-    "compile:es6": "webpack -p lib/index.js umd/index.js",
+    "compile:core": "webpack -p lib/core.js umd/core.js --library ReactTransact",
+    "compile:redux": "webpack -p lib/redux.js umd/redux.js --library ReactTransactRedux",
     "test": "npm run compile:ts && tape 'test/**/*.js'",
     "test:watch": "concurrently 'tsc -w' 'nodemon --delay 2000ms --exec tape \"test/**/*.js\"'",
     "readme:toc": "doctoc README.md"
@@ -59,6 +62,7 @@
     "typescript": "1.8.9",
     "typings": "0.7.9",
     "webpack": "1.13.0",
-    "xyz": "0.5.0"
+    "xyz": "0.5.0",
+    "yargs": "4.7.1"
   }
 }

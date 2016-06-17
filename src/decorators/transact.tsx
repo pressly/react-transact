@@ -40,6 +40,7 @@ export default (mapTasks: IMapTasks, opts: IDecoratorOptions = defaultOpts): Fun
         )
 
         if (typeof mapTasks === 'function') {
+          // Resolve in the next tick to avoid setting state during constructor.
           this.transact.resolve(mapTasks(props), { immediate: opts.onMount })
         }
 

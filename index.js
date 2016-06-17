@@ -1,1 +1,1 @@
-module.exports = require('./umd').default
+module.exports = require('./umd/core').default

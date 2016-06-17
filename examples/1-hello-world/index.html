@@ -10,7 +10,7 @@ This is an example of printing "Hello World!" on the screen using react-transact
 <div id="app"></div>
 <script src="https://npmcdn.com/react@15.0.2/dist/react.js"></script>
 <script src="https://npmcdn.com/react-dom@15.0.2/dist/react-dom.js"></script>
-<script src="../../umd/index.js"></script>
+<script src="../../umd/core.js"></script>
 <script>
   var h = React.createElement
 
@@ -21,28 +21,36 @@ This is an example of printing "Hello World!" on the screen using react-transact
 
   // Wrap the HelloWorld component with @transact decorator.
   var HelloWorld = ReactTransact.transact(
-    function () { return [ sendMessage('Hello World!') ] }
+    function (props) { return function() {
+      props.onMessage('Hello World!')
+    } }
   )(
-    // The state prop is coming from RunContext.
+    // The state prop is coming from TransactContext.
     function (props) {
-      return h('h1', {}, [props.transact.store.getState().message])
+      return h('h1', {}, [props.message])
     }
   )
 
-  // Reducer for our RunContext's local component state. (no redux!)
-  function stateReducer(state, action) {
-    if (action.type === 'MESSAGE') {
-      return { message: action.payload }
-    } else {
-      return (state || {})
+  var Container = React.createClass({
+    getInitialState() {
+      return { message: '' }
+    },
+    onMessage(msg) {
+      this.setState({ message: msg })
+    },
+    render() {
+      return h(HelloWorld, {
+        onMessage: this.onMessage,
+        message: this.state.message
+      })
     }
-  }
+  })
 
   ReactDOM.render(
-    h(ReactTransact.RunContext, { stateReducer },
-      h(HelloWorld)
-    ),
-    document.getElementById('app')
+    h(ReactTransact.TransactContext, { children:
+      h(Container)
+    }),
+      document.getElementById('app')
   )
 </script>
 </body>

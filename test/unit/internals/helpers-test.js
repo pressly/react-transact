@@ -2,8 +2,8 @@ const React = require('react')
 const test = require('tape')
 const sinon = require('sinon')
 const h = require('../../../lib/internals/helpers')
-const RunContext = require('../../../lib/components/RunContext').default
 const transact = require('../../../lib/decorators/transact').default
+const ReduxTransactContext = require('../../../lib/adapters/redux/ReduxTransactContext').default
 const Task = require('../../../lib/internals/Task').default
 const call = require('../../../lib/effects').call
 
