@@ -1,10 +1,10 @@
 const Task = ReactTransact.Task
-const taskCreator = ReactTransact.taskCreator
 const transact = ReactTransact.transact
-const install = ReactTransact.install
-const RunContext = ReactTransact.RunContext
-const SCHEDULED_TASKS_PENDING = ReactTransact.SCHEDULED_TASKS_PENDING
-const SCHEDULED_TASKS_COMPLETED = ReactTransact.SCHEDULED_TASKS_COMPLETED
+const taskCreator = ReactTransactRedux.taskCreator
+const reduxTransact = ReactTransactRedux.reduxTransact
+const ReduxTransactContext = ReactTransactRedux.ReduxTransactContext
+const SCHEDULED_TASKS_PENDING = ReactTransactRedux.SCHEDULED_TASKS_PENDING
+const SCHEDULED_TASKS_COMPLETED = ReactTransactRedux.SCHEDULED_TASKS_COMPLETED
 const h = React.createElement
 
 // Tasks
@@ -36,7 +36,7 @@ const handleTermChange = (dispatch, value) => {
 // Create a HOC with transact.
 const Container = transact()(
   ReactRedux.connect(state => ({ pending: state.pending, results: state.results }))(
-    // The state and transact props are coming from RunContext.
+    // The state and transact props are coming from ReduxTransactContext.
     ({ dispatch, results, pending }) => {
       return h('div', {},
         h('div', { className: 'container', children: [
@@ -78,12 +78,12 @@ const reducer = (state = { results: [] }, action) => {
   }
 }
 
-const store = Redux.createStore(reducer, undefined, Redux.applyMiddleware(install()))
+const store = Redux.createStore(reducer, undefined, Redux.applyMiddleware(reduxTransact()))
 
 // Render the application with state reducer and starting props.
 ReactDOM.render(
   h(ReactRedux.Provider, { store: store, children:
-    h(RunContext, {},
+    h(ReduxTransactContext, {},
       h(Container)
     )
   }),
