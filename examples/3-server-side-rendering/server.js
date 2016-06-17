@@ -4,7 +4,8 @@ import ReactDOM from 'react-dom/server'
 import {Route, match, RouterContext } from 'react-router'
 import {Provider, connect} from 'react-redux'
 import {createStore, applyMiddleware} from 'redux'
-import {transact, taskCreator, RunContext, install} from '../../index'
+import {transact} from '../../index'
+import {ReduxTransactContext, reduxTransact, taskCreator} from '../../redux'
 
 const server = express()
 
@@ -58,20 +59,20 @@ server.listen(8080, () => {
   server.all('/', (req, res) => {
     match({ routes, location: req.url }, (err, redirect, routerProps) => {
       // Install function returns a middleware, and a `done` promise.
-      const installed = install(routerProps)
+      const reduxTransactMiddleware = reduxTransact(routerProps)
 
-      const store = createStore(reducer, undefined, applyMiddleware(installed))
+      const store = createStore(reducer, undefined, applyMiddleware(reduxTransactMiddleware))
 
       const documentElement = (
         <Provider store={store}>
-          <RunContext>
+          <ReduxTransactContext>
             <RouterContext {...routerProps}/>
-          </RunContext>
+          </ReduxTransactContext>
         </Provider>
       )
 
       // Wait for all route tasks to resolve.
-      installed.done.then(() => {
+      reduxTransactMiddleware.done.then(() => {
         // Now call render to get the final HTML.
         const markup = ReactDOM.renderToStaticMarkup(documentElement)
         res.send(`
