@@ -1,5 +1,6 @@
 const test = require('tape')
 const sinon = require('sinon')
+const call = require('../../../lib/effects').call
 const Task = require('../../../lib/internals/Task').default
 const TaskQueue = require('../../../lib/internals/TaskQueue').default
 
@@ -36,12 +37,15 @@ test('TaskQueue', (t) => {
   })
 })
 
-test('TaskQueue#run (completion)', (t) => {
-  t.plan(11)
+test.only('TaskQueue#run (completion)', (t) => {
+  t.plan(13)
 
+  const effectSpy = sinon.spy()
   const onResult = sinon.spy()
   const queue = new TaskQueue()
+  const effect = call(effectSpy, 'Hello Effect!')
 
+  queue.push(effect)
   queue.push(Task.resolve({ type: 'GOOD', payload: 'Alice says "Hello!"'}))
 
   const p = queue.run(onResult)
@@ -49,6 +53,9 @@ test('TaskQueue#run (completion)', (t) => {
   t.ok(typeof p.then === 'function', 'returns a promise')
 
   p.then((results) => {
+    t.ok(effectSpy.called, 'effect was resolved')
+    t.ok(effectSpy.calledWith('Hello Effect!'), 'arguments are correct on effect resolution')
+
     t.ok(true, 'resolves promise on computation completion')
     t.equal(queue.size, 0, 'removes successfully completed tasks')
     t.deepEqual(onResult.firstCall.args[0], {

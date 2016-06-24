@@ -15,7 +15,7 @@ export const delay = (ms) => (x) => new Promise((res) => {
 
 // When this component is mounted, dispatch the actions from the supplied tasks.
 @transact(({ onMessage }) =>
-  () => onMessage('You can write your own message here.'),
+  call(onMessage, 'You can write your own message here.'),
   { onMount: true })
 class Messenger extends Component {
   render() {

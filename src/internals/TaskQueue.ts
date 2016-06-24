@@ -1,4 +1,5 @@
 import { IAction, IActionThunk, ITask, ITaskResult, ITransaction } from '../interfaces'
+import Call from './Call'
 import Task from './Task'
 import {compact} from "./helpers";
 type RunResults = Array<ITaskResult<any,any>>
@@ -28,7 +29,7 @@ class TaskQueue {
 
     if (Array.isArray((a))) {
       tasks = a
-    } else if (a instanceof Task) {
+    } else if (a instanceof Task || a instanceof Call) {
       tasks = [a]
     } else {
       throw new Error('TaskQueue#push must be passed a Task instance.')
@@ -54,13 +55,6 @@ class TaskQueue {
         let count = 0
 
         currentQueue.reduce((acc: PendingRunReturn, transaction: ITransaction): PendingRunReturn => {
-          // If a component applies transformations using `.chain` but need to commit one of the intermediary
-          // actions to the system, then this commit function can be used.
-          // TODO: Provide a mechanism for committing intermediary task results.
-          // const commit = Task.tap((task: ITask<any, any>, action, rejected: boolean) => {
-          //   onResult(action)
-          // })
-
           const { tasks } = transaction
 
           return acc.then((accResults: RunResults) => {
@@ -78,11 +72,14 @@ class TaskQueue {
                 const rejAndRes = (a: IAction<any>) => {
                   count = count - 1
 
-                  // Ensure the previous `run` completes before we invoke the callback.
-                  // This is done to guarantee total ordering of action dispatches.
-                  prevPending.then(() => onResult(a))
-
-                  results.push({ task, result: a })
+                  // We could be running an effect, so there is no resolve value
+                  // to provide.
+                  if (a) {
+                    // Ensure the previous `run` completes before we invoke the callback.
+                    // This is done to guarantee total ordering of action dispatches.
+                    prevPending.then(() => onResult(a))
+                    results.push({ task, result: a })
+                  }
 
                   // Once the last computation finishes, resolve promise.
                   if (count === 0) {
@@ -95,7 +92,7 @@ class TaskQueue {
                 setTimeout(() => task.fork(
                   rejAndRes,
                   rejAndRes,
-                  (c) => prevPending.then(() => onResult(c))
+                  (c) => prevPending.then(() => c && onResult(c))
                 ), 0)
               })
             })

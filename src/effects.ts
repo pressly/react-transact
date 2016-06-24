@@ -36,4 +36,4 @@ export const tap = (fn: IActionThunk<any>): IChainTask<any,any,any,any> => (x: a
  */
 export const trace = (msg: string): IChainTask<any,any,any,any> => tap((a: any) => console.log(msg, a))
 
-export const call = (fn: IEffect<any>) => new Call(fn)
+export const call = (fn: IEffect<any>, ...args: any[]) => new Call(fn, ...args)
