@@ -38,7 +38,7 @@ class TaskQueue {
     this.queue.push({ tasks: compact(tasks) })
   }
 
-  run(onResult: IActionThunk<any>): PendingRunReturn {
+  run(onResult?: IActionThunk<any>): PendingRunReturn {
     const size = this.size
     const prevPending = this.pending
 

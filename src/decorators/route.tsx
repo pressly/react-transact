@@ -12,7 +12,8 @@ const toProps = (paramNames, queryNames, defaults, props) =>
       , {}),
     paramNames.reduce((acc, name) =>
         Object.assign(acc, { [name]: props.params[name] || defaults[name] })
-      , {})
+      , {}),
+    props
   )
 
 type IProps = {
@@ -104,7 +105,7 @@ export default (first: RouteDescriptor | Array<string>, mapper: IMapTasks): IMap
           Object.assign({
             ref: r => this._inner = r,
             children: this.props.children
-          }, Object.assign({}, this.props, this.state.routeProps))
+          }, this.props, this.state.routeProps, this.context.transact.provided)
         )
       }
     }

@@ -1,4 +1,5 @@
 import Task from './internals/Task'
+import resolve from './internals/resolve'
 import route from './decorators/route'
 import _transact from './decorators/transact'
 import TransactContext from './components/TransactContext'
@@ -14,6 +15,7 @@ export {
   transact,
   route,
   Task,
+  resolve,
   TransactContext
 }
 
@@ -24,5 +26,6 @@ export default {
   transact,
   route,
   Task,
+  resolve,
   TransactContext
 }

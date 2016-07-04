@@ -1,12 +1,9 @@
-import {IStore, IAction, IMapTasks} from "../../interfaces"
+import {IStore, IAction, IMapTasks, IRouterProps} from "../../interfaces"
 import {RUN_SCHEDULED_TASKS, SCHEDULE_TASKS, SCHEDULED_TASKS_PENDING, SCHEDULED_TASKS_COMPLETED} from '../../actions'
 import TaskQueue from '../../internals/TaskQueue'
 import {getTaskMappers} from '../../internals/helpers'
 import Task from '../../internals/Task'
 
-type IRouterProps = {
-  components: any[]
-}
 
 const makeMiddleware = (routerProps: IRouterProps) => {
   const queue = new TaskQueue()

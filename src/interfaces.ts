@@ -56,3 +56,7 @@ export type IResolveOptions = {
 export type IDecoratorOptions = {
   onMount: boolean
 }
+
+export type IRouterProps = {
+  components: any[]
+}

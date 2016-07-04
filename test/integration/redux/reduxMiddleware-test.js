@@ -98,7 +98,7 @@ test('reduxMiddleware middleware (with routes)', (t) => {
   }
 
   const WrappedA = transact(
-    (state, props) => [
+    () => [
       Task.resolve({ type: 'OK', payload: 1 }),
       Task.resolve({ type: 'OK', payload: 2 })
     ]
@@ -107,7 +107,7 @@ test('reduxMiddleware middleware (with routes)', (t) => {
   )
 
   const WrappedB = transact(
-    (state, props) => [
+    () => [
       Task.resolve({ type: 'OK', payload: 3 }),
       Task.resolve({ type: 'OK', payload: 4 })
     ]

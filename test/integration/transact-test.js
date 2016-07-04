@@ -196,14 +196,3 @@ const ERROR = 'ERROR'
 const Greeter = ({ name }) => h('p', {
   className: 'message'
 }, [`Hello ${name}!`])
-
-const makeStore = (initialState = {}, m) => createStore((state = {}, action) => {
-  switch (action.type) {
-    case MESSAGE:
-      return { message: action.payload, history: state.history.concat([action]) }
-    case ERROR:
-      return { message: 'Hello Error!', history: state.history.concat([action]) }
-    default:
-      return state
-  }
-}, initialState, applyMiddleware(m))

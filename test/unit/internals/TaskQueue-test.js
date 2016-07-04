@@ -37,7 +37,7 @@ test('TaskQueue', (t) => {
   })
 })
 
-test.only('TaskQueue#run (completion)', (t) => {
+test('TaskQueue#run (completion)', (t) => {
   t.plan(13)
 
   const effectSpy = sinon.spy()
