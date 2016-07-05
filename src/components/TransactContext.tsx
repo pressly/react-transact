@@ -13,14 +13,12 @@ export default class TransactContext extends React.Component<any,any> {
 
   static childContextTypes = {
     transact: shape({
-      provided: any,
       resolve: func,
       run: func
     })
   }
 
   static propsTypes = {
-    provided: any,
     onReady: func,
     onBeforeRun: func,
     onAfterRun: func,
@@ -51,7 +49,6 @@ export default class TransactContext extends React.Component<any,any> {
   getChildContext() {
     return {
       transact: {
-        provided: this.props.provided,
         resolve: this.resolve.bind(this),
         run: this.run.bind(this)
       }
