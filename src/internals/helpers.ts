@@ -1,6 +1,6 @@
-import {ITask, TasksOrEffects, IEffect} from "../interfaces";
-import Call from "./Call";
-import Task from "./Task";
+import {ITask, TasksOrEffects, IEffect} from "../interfaces"
+import Call from "./Call"
+import Task from "./Task"
 
 export const invariant = (predicate: boolean, message: string) => {
   if (!predicate) {
@@ -83,4 +83,44 @@ export const toTasks = (x: TasksOrEffects): Array<ITask<any,any>> => {
       return new Call(a)
     }
   })
+}
+
+// Adapted from: https://github.com/mridgway/hoist-non-react-statics/
+
+const REACT_STATICS = {
+  childContextTypes: true,
+  contextTypes: true,
+  defaultProps: true,
+  displayName: true,
+  getDefaultProps: true,
+  mixins: true,
+  propTypes: true,
+  type: true
+}
+
+const KNOWN_STATICS = {
+  name: true,
+  length: true,
+  prototype: true,
+  caller: true,
+  arguments: true,
+  arity: true
+}
+
+export function hoistStatics(targetComponent, sourceComponent) {
+  if (typeof sourceComponent !== 'string') {
+    let keys: any[] = Object.getOwnPropertyNames(sourceComponent)
+
+    if (typeof Object.getOwnPropertySymbols === 'function') {
+      keys = keys.concat(Object.getOwnPropertySymbols(sourceComponent))
+    }
+
+    keys.forEach((key) => {
+      if (!REACT_STATICS[key] && !KNOWN_STATICS[key]) {
+        targetComponent[key] = sourceComponent[key]
+      }
+    })
+  }
+
+  return targetComponent
 }

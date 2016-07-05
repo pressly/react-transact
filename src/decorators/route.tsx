@@ -1,6 +1,6 @@
 import * as React from 'react'
 import transact from './transact'
-import { invariant, getDisplayName, shallowEqual } from '../internals/helpers'
+import { invariant, getDisplayName, shallowEqual, hoistStatics } from '../internals/helpers'
 import { IMapTasks } from "../interfaces";
 
 // Takes in route params and location query and returns a component props object.
@@ -110,7 +110,7 @@ export default (first: RouteDescriptor | Array<string>, mapper: IMapTasks): IMap
       }
     }
 
-    return Wrapped
+    return hoistStatics(Wrapped, Wrappee)
   }
 }
 

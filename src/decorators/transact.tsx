@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {IMapTasks, IDecoratorOptions, IResolveOptions, ITask} from '../interfaces'
-import { invariant, getDisplayName } from '../internals/helpers'
+import { invariant, getDisplayName, hoistStatics } from '../internals/helpers'
 
 type ITransact = {
   resolve: (tasks: Array<ITask<any,any>> | ITask<any,any>, opts: IResolveOptions) => void
@@ -66,6 +66,6 @@ export default (mapTasks: IMapTasks, opts: IDecoratorOptions = defaultOpts): Fun
       }
     }
 
-    return Wrapped
+    return hoistStatics(Wrapped, Wrappee)
   }
 }

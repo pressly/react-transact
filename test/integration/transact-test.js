@@ -20,6 +20,7 @@ test('transact decorator (empty)', (t) => {
   const Wrapped = factory(Greeter)
 
   t.ok(typeof Wrapped.displayName === 'string', 'returns a React component')
+  t.equal(Wrapped.someStaticProp, 'hello', 'hoists static props')
 
   const result = mount(
     h(Wrapped, {
@@ -196,3 +197,4 @@ const ERROR = 'ERROR'
 const Greeter = ({ name }) => h('p', {
   className: 'message'
 }, [`Hello ${name}!`])
+Greeter.someStaticProp = 'hello'
