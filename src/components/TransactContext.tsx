@@ -6,13 +6,14 @@ import {toTasks} from "../internals/helpers";
 
 const defaultResolveOpts = { immediate: false }
 
-const { any, func, shape } = React.PropTypes
+const { object, func, shape } = React.PropTypes
 
 export default class TransactContext extends React.Component<any,any> {
   static displayName = 'TransactContext'
 
   static childContextTypes = {
     transact: shape({
+      initialRouteProps: object,
       resolve: func,
       run: func
     })
@@ -49,6 +50,7 @@ export default class TransactContext extends React.Component<any,any> {
   getChildContext() {
     return {
       transact: {
+        initialRouteProps: this.props.initialRouteProps,
         resolve: this.resolve.bind(this),
         run: this.run.bind(this)
       }

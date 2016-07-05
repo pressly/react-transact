@@ -5,15 +5,18 @@ import { IMapTasks } from "../interfaces";
 
 // Takes in route params and location query and returns a component props object.
 // If the value is empty, then the default is used.
-const toProps = (paramNames, queryNames, defaults, props) =>
+const toProps = (paramNames, queryNames, defaults: any = {}, props: any = {}) =>
   Object.assign(
     queryNames.reduce((acc, name) =>
-        Object.assign(acc, { [name]: props.location.query[name] || defaults[name] })
+        Object.assign(acc, {
+          [name]: props.location && props.location.query && props.location.query[name] ? props.location.query[name] : defaults[name]
+        })
       , {}),
     paramNames.reduce((acc, name) =>
-        Object.assign(acc, { [name]: props.params[name] || defaults[name] })
-      , {}),
-    props
+        Object.assign(acc, {
+          [name]: props.params && props.params[name] ? props.params[name] : defaults[name]
+        })
+      , {})
   )
 
 type IProps = {
@@ -62,7 +65,7 @@ export default (first: RouteDescriptor | Array<string>, mapper: IMapTasks): IMap
   )
 
   return (Wrappee: any): any => {
-    const Inner = transact(mapper, { onMount: true })((props) =>
+    const Inner = transact(mapper, { trigger: 'manual' })((props) =>
       React.createElement(
         Wrappee,
         props
@@ -71,7 +74,9 @@ export default (first: RouteDescriptor | Array<string>, mapper: IMapTasks): IMap
     class Wrapped extends React.Component<IProps,IState> {
       static displayName = `TransactRoute(${getDisplayName(Wrappee)})`
 
-      static _mapTasks = (props) => mapper(toProps(paramNames, queryNames, defaults, props))
+      static _mapTasks = (props) => (
+        mapper(Object.assign(toProps(paramNames, queryNames, defaults, props), props))
+      )
 
       static contextTypes = {
         router: React.PropTypes.any,
@@ -84,13 +89,22 @@ export default (first: RouteDescriptor | Array<string>, mapper: IMapTasks): IMap
 
       constructor(props, context) {
         super(props, context)
+        const initialProps = context.transact.initialRouteProps
         this.state = {
-          routeProps: toProps(paramNames, queryNames, defaults, props)
+          routeProps: toProps(paramNames, queryNames, defaults, initialProps)
         }
       }
 
+      componentWillMount() {
+        this.maybeUpdateFromProps(this.props)
+      }
+
       componentWillReceiveProps(nextProps) {
-        const nextParamProps = toProps(paramNames, queryNames, defaults, nextProps)
+        this.maybeUpdateFromProps(nextProps)
+      }
+
+      maybeUpdateFromProps(props) {
+        const nextParamProps = toProps(paramNames, queryNames, defaults, props)
         if (!shallowEqual(this.state.routeProps, nextParamProps)) {
           // Set the state, then call the @transact component to resolve its tasks again.
           this.setState({ routeProps: nextParamProps }, () => {

@@ -39,7 +39,7 @@ const routes = (
 
 server.listen(8080, () => {
   server.all('*', (req, res) => {
-    match({ routes, location: req.url }, (err, redirect, routerProps) => {
+    match({ routes, location: req.url }, (err, redirect, routeProps) => {
       const appState = {
         color: '',
         message: ''
@@ -56,11 +56,11 @@ server.listen(8080, () => {
       const provided = { appState, mutateState }
 
       // Wait for all route tasks to resolve.
-      resolve(routerProps, provided).then(() => {
+      resolve(routeProps, provided).then(() => {
         // Now call render to get the final HTML.
         const markup = ReactDOM.renderToStaticMarkup(
-          <TransactContext provided={provided}>
-            <RouterContext {...routerProps}/>
+          <TransactContext initialRouteProps={routeProps} provided={provided}>
+            <RouterContext {...routeProps}/>
           </TransactContext>
         )
 

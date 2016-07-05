@@ -89,8 +89,6 @@ test('transact decorator (run on mount)', (t) => {
   t.end()
 })
 
-const call = (fn) => new Task((__, res) => fn(res))
-
 test('TransactContext with transact decorator', (t) => {
   const Message = ({ message }) => {
     return h('p', {}, [ message ])

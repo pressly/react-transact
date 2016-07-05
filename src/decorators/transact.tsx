@@ -13,7 +13,8 @@ type IProps = {
 }
 
 const defaultOpts = {
-  onMount: false
+  onMount: false,
+  trigger: 'auto'
 }
 
 export default (mapTasks: IMapTasks, opts: IDecoratorOptions = defaultOpts): Function => {
@@ -39,7 +40,7 @@ export default (mapTasks: IMapTasks, opts: IDecoratorOptions = defaultOpts): Fun
           'Cannot find `transact` from context or props. Perhaps you forgot to mount `TransactContext` as a parent?'
         )
 
-        if (typeof mapTasks === 'function') {
+        if (opts.trigger !== 'manual' && typeof mapTasks === 'function') {
           // Resolve in the next tick to avoid setting state during constructor.
           this.transact.resolve(mapTasks(props), { immediate: opts.onMount })
         }
