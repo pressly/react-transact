@@ -18,13 +18,15 @@ const server = express()
     message: 'Hello World!'
   }
 },
-({ mutateState, color, message }) => [
-  call(mutateState, { message }),
-  call(mutateState, { color  })
-])
+({ mutateState, color, message }) => {
+  return [
+    call(mutateState, { message }),
+    call(mutateState, { color  })
+  ]
+})
 class RouteHandler extends Component {
   render() {
-    const { color, message } = this.props.appState
+    const { color, message } = this.props
     return (
       <div style={{ color }}>
         <h1>{message}</h1>
@@ -38,38 +40,42 @@ const routes = (
 )
 
 server.listen(8080, () => {
-  server.all('*', (req, res) => {
-    match({ routes, location: req.url }, (err, redirect, routeProps) => {
-      const appState = {
-        color: '',
-        message: ''
-      }
+  server.get('*', (req, res) => {
+    if (req.accepts('html')) {
+      match({ routes, location: req.url }, (err, redirect, routeProps) => {
+        const appState = {
+          color: '',
+          message: ''
+        }
 
-      // Artificially make mutation async and delayed.
-      const mutateState = (newState) => new Promise((res) => {
-        setTimeout(() => {
-          Object.assign(appState, newState)
-          res()
-        }, Math.random() * 200)
+        // Artificially make mutation async and delayed.
+        const mutateState = (newState) => new Promise((res) => {
+          setTimeout(() => {
+            Object.assign(appState, newState)
+            res()
+          }, Math.random() * 200)
+        })
+
+        const extraProps = { appState, mutateState }
+
+        // Wait for all route tasks to resolve.
+        resolve(routeProps, extraProps).then(() => {
+          // Now call render to get the final HTML.
+          const markup = ReactDOM.renderToStaticMarkup(
+            <TransactContext>
+              <RouterContext {...routeProps}/>
+            </TransactContext>
+          )
+
+          res.send(`
+          <!doctype html>
+          ${markup}
+          <pre>State = ${JSON.stringify(appState, null, 2)}</pre>
+          `)
+        })
       })
-
-      const provided = { appState, mutateState }
-
-      // Wait for all route tasks to resolve.
-      resolve(routeProps, provided).then(() => {
-        // Now call render to get the final HTML.
-        const markup = ReactDOM.renderToStaticMarkup(
-          <TransactContext initialRouteProps={routeProps} provided={provided}>
-            <RouterContext {...routeProps}/>
-          </TransactContext>
-        )
-
-        res.send(`
-        <!doctype html>
-        ${markup}
-        <pre>State = ${JSON.stringify(appState, null, 2)}</pre>
-        `)
-      })
-    })
+    } else {
+      res.status(404).end()
+    }
   })
 })
