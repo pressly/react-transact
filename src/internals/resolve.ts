@@ -5,11 +5,12 @@ import TaskQueue from "./TaskQueue"
 /*
  * Resolves all data tasks based on matched routes.
  */
-const resolve = (routerProps: IRouterProps, provided?: any) => {
+const resolve = (routerProps: IRouterProps) => {
   const queue = new TaskQueue()
 
+  console.log(routerProps.components)
   const mappers = getTaskMappers(routerProps.components)
-  const props = Object.assign({}, provided, routerProps)
+  const props = Object.assign({}, routerProps)
 
   // After store is created, run initial tasks, if any.
   mappers.forEach((mapper: IMapTasks) => {

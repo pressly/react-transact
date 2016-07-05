@@ -9,7 +9,7 @@ const resolve = require('../../lib/internals/resolve').default
 
 const h = React.createElement
 
-test('route decorator', (assert) => {
+test('resolve function', (assert) => {
   const spy = sinon.spy()
 
   const SyncChild = route(
