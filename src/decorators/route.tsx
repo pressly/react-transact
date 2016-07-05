@@ -89,7 +89,9 @@ export default (first: RouteDescriptor | Array<string>, mapper: IMapTasks): IMap
 
       constructor(props, context) {
         super(props, context)
-        const initialProps = context.transact.initialRouteProps
+        const { initialized, initialRouteProps } = context.transact
+        const initialProps = initialized ? {} : initialRouteProps
+        console.log('initialized', initialized)
         this.state = {
           routeProps: toProps(paramNames, queryNames, defaults, initialProps)
         }

@@ -15,20 +15,24 @@ export default class ReduxTransactContext extends React.Component<any,any> {
   }
   static childContextTypes = {
     transact: shape({
+      initialRouteProps: any,
       store: any,
       resolve: func,
       run: func
     })
   }
-  static propsTypes = {
-    stateReducer: func
+  static propTypes = {
+    initialRouteProps: any
   }
 
+  state: any
   context: any
   store: IStore
 
   constructor(props, context) {
     super(props, context)
+
+    this.state = { initialized: false }
 
     // Using store from redux
     this.store = context.store || props.store
@@ -39,11 +43,17 @@ export default class ReduxTransactContext extends React.Component<any,any> {
   getChildContext() {
     return {
       transact: {
+        initialized: this.state.initialized,
+        initialRouteProps: this.props.initialRouteProps,
         store: this.store,
         resolve: this.resolve.bind(this),
         run: this.run.bind(this)
       }
     }
+  }
+
+  componentDidMount() {
+    this.setState({ initialized: true })
   }
 
   componentWillReceiveProps() {

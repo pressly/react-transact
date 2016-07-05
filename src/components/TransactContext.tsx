@@ -33,12 +33,14 @@ export default class TransactContext extends React.Component<any,any> {
     onResult: () => {}
   }
 
+  state: any
   ready: Function
   context: any
   taskQueue: TaskQueue
 
   constructor(props, context) {
     super(props, context)
+    this.state = { initialized: false }
     this.taskQueue = new TaskQueue()
     setTimeout(() => this.runTasks(), 0)
 
@@ -50,11 +52,16 @@ export default class TransactContext extends React.Component<any,any> {
   getChildContext() {
     return {
       transact: {
+        initialized: this.state.initialized,
         initialRouteProps: this.props.initialRouteProps,
         resolve: this.resolve.bind(this),
         run: this.run.bind(this)
       }
     }
+  }
+  
+  componentDidMount() {
+    this.setState({ initialized: true })
   }
 
   resolve(tasksOrEffects: TasksOrEffects, opts: IResolveOptions = defaultResolveOpts): void {
