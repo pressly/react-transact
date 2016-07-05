@@ -31,28 +31,27 @@ test('route decorator', (t) => {
 })
 
 
-test('TransactContext with transact decorator and initialRouteProps', (t) => {
-  const spy = sinon.spy()
+const spy = sinon.spy()
 
-  const Wrapped = route({
-    params: ['a'],
-    query: ['b']
-  }, () => call(spy))(() => h('p'))
+const Wrapped = route({
+  params: ['a'],
+  query: ['b']
+}, () => call(spy))(() => h('p'))
 
-  class Root extends React.Component {
-    constructor(props) {
-      super(props)
-      this.state = { message: '' }
-      this.messages = []
-    }
-    onMessageChange(message) {
-      this.messages.push(message)
-      this.setState({message})
-      return message
-    }
-    render() {
-      return (
-        h(TransactContext, {
+class Root extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = { message: '' }
+    this.messages = []
+  }
+  onMessageChange(message) {
+    this.messages.push(message)
+    this.setState({message})
+    return message
+  }
+  render() {
+    return (
+      h(TransactContext, {
           initialRouteProps: {
             params: {
               a: 'foo'
@@ -62,20 +61,21 @@ test('TransactContext with transact decorator and initialRouteProps', (t) => {
             }
           }
         }, h('div', { children: [
-            h(Wrapped, {
-              params: this.props.params,
-              location: this.props.location,
-              message: this.state.message,
-              onMessageChange: this.onMessageChange.bind(this)
-            })
-          ]})
-        )
+          h(Wrapped, {
+            params: this.props.params,
+            location: this.props.location,
+            message: this.state.message,
+            onMessageChange: this.onMessageChange.bind(this)
+          })
+        ]})
       )
-    }
+    )
   }
+}
 
+test('skipping initial tasks if route props have not changed', (t) => {
   // Same route props as initial
-  mount(h(Root, {
+  const wrapper = mount(h(Root, {
     params: {
       a: 'foo'
     },
@@ -87,18 +87,33 @@ test('TransactContext with transact decorator and initialRouteProps', (t) => {
   delay(10).then(() => {
     t.ok(!spy.called, 'callback not invoked when route props are same')
 
-    // different route props from initial
-    mount(h(Root, {
-      params: {
-        a: 'Something else!'
-      },
-      location: {
-      }
-    }))
+    wrapper.setProps({ params: { a: 'foo' } })
 
     delay(10).then(() => {
-      t.ok(spy.called, 'callback is invoked when route props are different')
-      t.end()
+      t.ok(!spy.called, 'callback invoked when route props remains the same')
+
+      wrapper.setProps({ params: { a: 'different' } })
+
+      delay(10).then(() => {
+        t.ok(spy.called, 'callback invoked when route props change')
+        t.end()
+      })
     })
+  })
+})
+
+test('invoking initial tasks if route props are not specified', (t) => {
+  // different route props from initial
+  mount(h(Root, {
+    params: {
+      a: 'Something else!'
+    },
+    location: {
+    }
+  }))
+
+  delay(10).then(() => {
+    t.ok(spy.called, 'callback is invoked when route props are different')
+    t.end()
   })
 })
