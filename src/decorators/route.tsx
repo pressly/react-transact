@@ -5,8 +5,9 @@ import { IMapTasks } from "../interfaces";
 
 // Takes in route params and location query and returns a component props object.
 // If the value is empty, then the default is used.
-const toProps = (paramNames, queryNames, defaults: any = {}, props: any = {}) =>
-  Object.assign(
+const toProps = (paramNames, queryNames, defaults: any = {}, props: any) =>
+  props
+  ? Object.assign(
     queryNames.reduce((acc, name) =>
         Object.assign(acc, {
           [name]: props.location && props.location.query && props.location.query[name] ? props.location.query[name] : defaults[name]
@@ -18,6 +19,7 @@ const toProps = (paramNames, queryNames, defaults: any = {}, props: any = {}) =>
         })
       , {})
   )
+  : null
 
 type IProps = {
   transact: any
