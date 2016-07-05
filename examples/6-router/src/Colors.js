@@ -8,13 +8,18 @@ const delay = (ms) => (x) => new Promise((res) => {
   setTimeout(() => res(x), ms)
 })
 
-@transact.route({}, () => [
-  changeColor('black').map(delay(1000)),
-  changeColor('yellow').map(delay(2000)),
-  changeColor('red').map(delay(3000)),
-  changeColor('blue').map(delay(4000)),
-  changeColor('green').map(delay(5000))
-])
+@transact.route({
+  params: ['startingColor']
+}, ({ startingColor }) => {
+  console.log('?????')
+  return [
+    changeColor(startingColor).map(delay(1000)),
+    changeColor('yellow').map(delay(2000)),
+    changeColor('red').map(delay(3000)),
+    changeColor('blue').map(delay(4000)),
+    changeColor('green').map(delay(5000))
+  ]
+})
 @connect(state => ({
   color: state.color
 }))

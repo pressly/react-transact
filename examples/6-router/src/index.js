@@ -10,20 +10,20 @@ import Echo from './Echo'
 import Greeting from './Greeting'
 import Message from './Message'
 
-const store = configureStore({ name: 'World', error: false })
+const store = configureStore({ name: 'World', error: false, color: 'cyan' })
 
 ReactDOM.render(
   <div style={{ fontSize: '24px', textAlign: 'center' }}>
     <Provider store={store}>
-      <ReduxTransactContext>
+      <ReduxTransactContext initialRouteProps={{ params: { startingColor: 'cyan' } }}>
         <Router history={hashHistory}>
-          <Route path="/:startingColor" component={App}>
-            <IndexRoute component={Colors}/>
+          <Route path="/" component={App}>
             <Route path="echo/:what" component={Echo}/>
             <Route path="greeting" component={Greeting}/>
             <Route path="message" component={Message}/>
+            <Route path=":startingColor" component={Colors}/>
           </Route>
-          <Redirect from="*" to="/cyan"/>
+          <Redirect from="/" to="/cyan"/>
         </Router>
       </ReduxTransactContext>
     </Provider>
