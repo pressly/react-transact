@@ -107,7 +107,6 @@ export default (first: RouteDescriptor | Array<string>, mapper: IMapTasks): IMap
 
       maybeUpdateFromProps(props) {
         const nextParamProps = toProps(paramNames, queryNames, defaults, props)
-        console.log(this.state.routeProps, nextParamProps)
         if (!shallowEqual(this.state.routeProps, nextParamProps)) {
           // Set the state, then call the @transact component to resolve its tasks again.
           this.setState({ routeProps: nextParamProps }, () => {
