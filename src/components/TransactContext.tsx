@@ -6,14 +6,14 @@ import {toTasks} from "../internals/helpers";
 
 const defaultResolveOpts = { immediate: false }
 
-const { object, func, shape } = React.PropTypes
+const { bool, func, shape } = React.PropTypes
 
 export default class TransactContext extends React.Component<any,any> {
   static displayName = 'TransactContext'
 
   static childContextTypes = {
     transact: shape({
-      skipInitialRoute: object,
+      skipInitialRoute: bool,
       resolve: func,
       run: func
     })
