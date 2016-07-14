@@ -52,14 +52,7 @@ class Root extends React.Component {
   render() {
     return (
       h(TransactContext, {
-          initialRouteProps: {
-            params: {
-              a: 'foo'
-            },
-            location: {
-              query: { b: 'bar' }
-            }
-          }
+          skipInitialRoute: true
         }, h('div', { children: [
           h(Wrapped, {
             params: this.props.params,
@@ -73,7 +66,7 @@ class Root extends React.Component {
   }
 }
 
-test('skipping initial tasks if route props have not changed', (t) => {
+test('skipping initial tasks if skipInitialRoute is true', (t) => {
   // Same route props as initial
   const wrapper = mount(h(Root, {
     params: {
@@ -85,7 +78,7 @@ test('skipping initial tasks if route props have not changed', (t) => {
   }))
 
   delay(10).then(() => {
-    t.ok(!spy.called, 'callback not invoked when route props are same')
+    t.ok(!spy.called, 'callback not invoked when skipInitialRoute is true')
 
     wrapper.setProps({ params: { a: 'foo' } })
 

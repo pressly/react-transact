@@ -91,9 +91,9 @@ export default (first: RouteDescriptor | Array<string>, mapper: IMapTasks): IMap
 
       constructor(props, context) {
         super(props, context)
-        const { initialized, initialRouteProps } = context.transact
+        const { initialized, skipInitialRoute } = context.transact
         this.state = {
-          routeProps: initialized ? null : toProps(paramNames, queryNames, defaults, initialRouteProps)
+          routeProps: initialized || !skipInitialRoute ? null : toProps(paramNames, queryNames, defaults, props)
         }
       }
 
@@ -107,6 +107,7 @@ export default (first: RouteDescriptor | Array<string>, mapper: IMapTasks): IMap
 
       maybeUpdateFromProps(props) {
         const nextParamProps = toProps(paramNames, queryNames, defaults, props)
+        console.log(this.state.routeProps, nextParamProps)
         if (!shallowEqual(this.state.routeProps, nextParamProps)) {
           // Set the state, then call the @transact component to resolve its tasks again.
           this.setState({ routeProps: nextParamProps }, () => {

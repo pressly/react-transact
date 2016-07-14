@@ -13,7 +13,7 @@ export default class TransactContext extends React.Component<any,any> {
 
   static childContextTypes = {
     transact: shape({
-      initialRouteProps: object,
+      skipInitialRoute: object,
       resolve: func,
       run: func
     })
@@ -53,7 +53,7 @@ export default class TransactContext extends React.Component<any,any> {
     return {
       transact: {
         initialized: this.state.initialized,
-        initialRouteProps: this.props.initialRouteProps,
+        skipInitialRoute: this.props.skipInitialRoute,
         resolve: this.resolve.bind(this),
         run: this.run.bind(this)
       }

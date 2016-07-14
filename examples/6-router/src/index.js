@@ -15,7 +15,7 @@ const store = configureStore({ name: 'World', error: false, color: 'cyan' })
 ReactDOM.render(
   <div style={{ fontSize: '24px', textAlign: 'center' }}>
     <Provider store={store}>
-      <ReduxTransactContext initialRouteProps={{ params: { startingColor: 'cyan' } }}>
+      <ReduxTransactContext skipInitialRoute={true}>
         <Router history={hashHistory}>
           <Route path="/" component={App}>
             <Route path="echo/:what" component={Echo}/>

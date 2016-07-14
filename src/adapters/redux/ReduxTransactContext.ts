@@ -6,7 +6,7 @@ const defaultResolveOpts = {
   immediate: false
 }
 
-const { any, func, object, shape } = React.PropTypes
+const { any, func, object, shape, bool } = React.PropTypes
 
 export default class ReduxTransactContext extends React.Component<any,any> {
   static displayName = 'ReduxTransactContext'
@@ -15,14 +15,14 @@ export default class ReduxTransactContext extends React.Component<any,any> {
   }
   static childContextTypes = {
     transact: shape({
-      initialRouteProps: any,
+      skipInitialRoute: any,
       store: any,
       resolve: func,
       run: func
     })
   }
   static propTypes = {
-    initialRouteProps: any
+    skipInitialRoute: bool
   }
 
   state: any
@@ -44,7 +44,7 @@ export default class ReduxTransactContext extends React.Component<any,any> {
     return {
       transact: {
         initialized: this.state.initialized,
-        initialRouteProps: this.props.initialRouteProps,
+        skipInitialRoute: this.props.skipInitialRoute,
         store: this.store,
         resolve: this.resolve.bind(this),
         run: this.run.bind(this)
