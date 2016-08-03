@@ -65,7 +65,7 @@ export const flattenComponents = (components: any[]): any[] => {
     } else {
       return recur(
         components.reduce((cs, c) => {
-          if (c.props && c.props.children && c.props.children.length > 0) {
+          if (c && c.props && c.props.children && c.props.children.length > 0) {
             return cs.concat(c.props.children)
           } else {
             return cs
