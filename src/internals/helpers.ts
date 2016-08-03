@@ -60,18 +60,19 @@ export const flattenComponents = (components: any[]): any[] => {
   return recur(components, [])
 
   function recur(components: any[], acc: any[]): any[] {
-    if (components.length === 0) {
+    const nonNilComponents = compact(components)
+    if (nonNilComponents.length === 0) {
       return acc
     } else {
       return recur(
-        components.reduce((cs, c) => {
-          if (c && c.props && c.props.children && c.props.children.length > 0) {
+        nonNilComponents.reduce((cs, c) => {
+          if (c.props && c.props.children && c.props.children.length > 0) {
             return cs.concat(c.props.children)
           } else {
             return cs
           }
         }, []),
-        acc.concat(components)
+        acc.concat(nonNilComponents)
       )
     }
   }
