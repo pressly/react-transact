@@ -149,9 +149,12 @@ const store = createStore(reducer, undefined, applyMiddleware(transactMiddleware
 
 const echo = taskCreator('FAILED', 'ECHO', x => x)
 
-@transact((state, props) => [
-  echo(props.params.what)
-])
+@transact.route(
+  {
+    params: ['what'] // This will map to the path param as defined by the route.
+  },
+ ({ what }) => echo(what) // This will only execute when `what` changes.
+)
 @connect(state => state.message)
 class EchoHandler extends React.Component {
   render() {
